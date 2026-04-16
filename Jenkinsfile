@@ -1,6 +1,14 @@
 pipeline {
     agent any
 
+    parameters {
+        booleanParam(
+            name: 'RUN_DEPLOY',
+            defaultValue: false,
+            description: 'Run deployment to vm1. Keep false until the deploy server is ready.'
+        )
+    }
+
     environment {
         IMAGE_NAME = 'cicd-practice-app'
         IMAGE_TAG = "${env.BUILD_NUMBER}"
@@ -38,7 +46,9 @@ pipeline {
 
         stage('Deploy') {
             when {
-                branch 'main'
+                expression {
+                    params.RUN_DEPLOY && (!env.BRANCH_NAME || env.BRANCH_NAME == 'main')
+                }
             }
             steps {
                 sshagent(credentials: ['deploy-server-ssh-key']) {
@@ -53,11 +63,42 @@ pipeline {
     }
 
     post {
+        failure {
+            sh '''
+                set +e
+                {
+                    echo "# Debug Agent Input"
+                    echo
+                    echo "## Build"
+                    echo "- Job: ${JOB_NAME}"
+                    echo "- Build number: ${BUILD_NUMBER}"
+                    echo "- Branch: ${BRANCH_NAME:-unknown}"
+                    echo "- Commit: ${GIT_COMMIT:-unknown}"
+                    echo
+                    echo "## Recent Commit"
+                    git log -1 --oneline
+                    echo
+                    echo "## Changed Files"
+                    if git rev-parse HEAD~1 >/dev/null 2>&1; then
+                        git diff --name-only HEAD~1..HEAD
+                    else
+                        git show --name-only --format="" HEAD
+                    fi
+                    echo
+                    echo "## Recent Diff"
+                    if git rev-parse HEAD~1 >/dev/null 2>&1; then
+                        git diff --stat HEAD~1..HEAD
+                    else
+                        git show --stat --format="" HEAD
+                    fi
+                } > debug-agent-input.md
+                exit 0
+            '''
+            archiveArtifacts artifacts: 'debug-agent-input.md', allowEmptyArchive: true
+            echo 'CI/CD pipeline failed. Use the Jenkins console log and debug-agent-input.md as Debug Agent input.'
+        }
         success {
             echo 'CI/CD pipeline succeeded.'
-        }
-        failure {
-            echo 'CI/CD pipeline failed. Check console logs.'
         }
     }
 }
