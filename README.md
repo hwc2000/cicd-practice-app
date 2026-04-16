@@ -19,6 +19,10 @@ FastAPI 기반 CI/CD 실습 앱입니다. 이 저장소의 목적은 Jenkins 자
 10. pytest 통과
 11. Docker image build 성공
 12. Deploy stage는 RUN_DEPLOY=false 조건으로 skip
+13. 의도적 테스트 실패 생성 및 Jenkins 실패 로그 확인
+14. 실패 원인 수정 후 Jenkins SUCCESS 재확인
+15. Debug Agent 입력 예시 문서 추가
+16. 초기 Debug Agent 목업 스크립트 추가
 ```
 
 첫 실패도 기록했습니다.
@@ -43,6 +47,17 @@ Checkout
 -> Build Image
 -> Deploy skipped
 -> SUCCESS
+```
+
+의도적으로 만든 실패/복구 흐름도 확인했습니다.
+
+```text
+app/main.py 응답을 broken으로 변경
+-> Jenkins Test stage 실패
+-> Console Output에서 실패 테스트 확인
+-> debug-agent-input.md 생성 확인
+-> app/main.py 응답 원복
+-> Jenkins SUCCESS 재확인
 ```
 
 ## Project Direction
@@ -115,10 +130,15 @@ Jenkins가 GitHub repo checkout
 Jenkins에서 pytest 실행
 Jenkins에서 Docker image build
 수동 Build with Parameters 성공
+의도적 실패 로그 확보
+debug-agent-input.md 확인
+docs/debug-agent-example.md 작성
+scripts/debug_agent.py 초기 목업 작성
+docs/debug-agent-report.md 생성 확인
 
 다음:
-일부러 테스트 실패 만들기
-Jenkins console log와 git diff를 Debug Agent 입력으로 사용
+Jenkins 실패 시 Debug Agent 리포트를 자동 생성하도록 연결
+나중에 OpenAI API 기반 Debug Agent로 확장
 ```
 
 아직 하지 않을 것:
@@ -204,14 +224,38 @@ patch draft
 human review checklist
 ```
 
+## Debug Agent Prototype
+
+현재 Debug Agent는 아직 LLM API를 호출하지 않는 로컬 목업입니다.
+
+```text
+Input:
+docs/debug-agent-example.md
+
+Script:
+scripts/debug_agent.py
+
+Output:
+docs/debug-agent-report.md
+```
+
+실행 예시:
+
+```bash
+python3 scripts/debug_agent.py \
+  --input docs/debug-agent-example.md \
+  --output docs/debug-agent-report.md
+```
+
+현재 목업은 실패 테스트명, 에러 메시지, 의심 파일, 원인, 수정 방향, 패치 초안, 검증 명령을 리포트 형태로 정리합니다.
+
 ## Next Steps
 
 ```text
-1. 현재 성공 상태를 기준점으로 유지
-2. app/main.py를 일부러 깨뜨려 Test stage 실패 만들기
-3. Jenkins Console Output과 debug-agent-input.md 수집
-4. 실패 로그 + git diff를 Debug Agent 입력 형식으로 정리
-5. Debug Agent가 실패 원인, 의심 파일, 수정 방향을 설명하게 하기
-6. 수동 실패/복구 흐름이 익숙해지면 GitHub webhook 연결
-7. 마지막으로 배포 서버(vm1)를 따로 만들고 RUN_DEPLOY=true 배포 실험
+1. Jenkinsfile post failure에서 scripts/debug_agent.py 실행 연결
+2. 실패 시 debug-agent-report.md를 artifact로 archive
+3. Jenkins Console Output 일부를 Debug Agent 입력에 포함하도록 개선
+4. OpenAI API 기반 Debug Agent로 확장
+5. GitHub webhook 연결
+6. 배포 서버(vm1)를 따로 만들고 RUN_DEPLOY=true 배포 실험
 ```
