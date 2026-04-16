@@ -32,7 +32,7 @@ pipeline {
 
         stage('Test') {
             steps {
-                sh '. .venv/bin/activate && pytest -q'
+                sh '. .venv/bin/activate && PYTHONPATH=. pytest -q'
             }
         }
 
