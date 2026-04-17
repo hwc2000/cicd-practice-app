@@ -38,6 +38,7 @@ FastAPI 기반 CI/CD 실습 앱입니다. 이 저장소의 목적은 Jenkins 자
 29. Jenkins failure post에서 .venv Python 사용하도록 수정
 30. 의도적 실패/복구로 LangGraph state artifact 생성 확인
 31. local graph와 LangGraph state 비교 tool 추가
+32. OpenAI Debug Agent용 .env.example, 선택 실행 CLI, 인터페이스 문서 추가
 ```
 
 첫 실패도 기록했습니다.
@@ -82,6 +83,7 @@ debug-agent-input.md
 debug-agent-report.md
 debug-graph-state.json
 debug-langgraph-state.json
+debug-graph-compare.json
 pytest-output.log
 ```
 
@@ -186,10 +188,13 @@ Jenkins failure post 단계에서 .venv/bin/python 우선 사용하도록 수정
 강사님 실습 저장소는 WSL의 ~/workspace/hw/academy/instructor-repos에 clone하고 service 브랜치 checkout
 agent_tools/compare_graph_states.py와 scripts/compare_graph_states.py 추가
 Jenkins failure post 단계에서 debug-graph-compare.json artifact 생성 연결
+의도적 실패에서 debug-graph-compare.json matched=true 확인 후 복구 빌드 SUCCESS 재확인
+.env.example과 scripts/run_openai_debug_agent.py 추가
+docs/openai-debug-agent-interface.md에 OpenAI 연결 경계와 tool/harness 대상 함수 정리
 
 다음:
-의도적 실패로 Jenkins artifact에 debug-graph-compare.json이 남고 matched=true인지 확인
-나중에 OpenAI API 기반 Debug Agent로 확장
+OpenAI API를 로컬에서 수동 실행해 debug-openai-report.md 생성 확인
+결과가 괜찮으면 Jenkins failure artifact에 debug-openai-report.md를 선택적으로 추가
 ```
 
 아직 하지 않을 것:
@@ -300,13 +305,52 @@ python3 scripts/debug_agent.py \
 
 현재 목업은 실패 테스트명, 에러 메시지, 의심 파일, 원인, 수정 방향, 패치 초안, 검증 명령을 리포트 형태로 정리합니다.
 
+## Optional OpenAI Debug Agent
+
+OpenAI API 연결은 선택 기능입니다. 기본 Jenkins 빌드는 API key 없이 계속 동작합니다.
+
+환경변수 예시는 `.env.example`에 있습니다.
+
+```bash
+cp .env.example .env
+vim .env
+```
+
+수동 실행:
+
+```bash
+python3 scripts/run_openai_debug_agent.py \
+  --input docs/debug-agent-example.md \
+  --output docs/openai-debug-agent-report.md \
+  --env-file .env
+```
+
+현재 OpenAI layer의 역할:
+
+```text
+debug-agent-input.md
++ prompt templates
++ deterministic local analysis
+-> OpenAI Responses API
+-> markdown report
+```
+
+주의:
+
+```text
+OpenAI layer는 아직 Jenkins post failure에 자동 연결하지 않는다.
+먼저 로컬에서 API 응답 품질과 비용을 확인한다.
+자동 patch, 자동 merge, 자동 deploy 권한은 주지 않는다.
+```
+
 ## Next Steps
 
 ```text
 1. Jenkinsfile post failure에서 scripts/debug_agent.py 실행 연결
 2. 실패 시 debug-agent-report.md를 artifact로 archive
 3. Jenkins Console Output 일부를 Debug Agent 입력에 포함하도록 개선
-4. OpenAI API 기반 Debug Agent로 확장
-5. GitHub webhook 연결
-6. 배포 서버(vm1)를 따로 만들고 RUN_DEPLOY=true 배포 실험
+4. OpenAI API 기반 Debug Agent를 로컬에서 수동 검증
+5. OpenAI 결과가 안정적이면 Jenkins artifact로 선택 연결
+6. GitHub webhook 연결
+7. 배포 서버(vm1)를 따로 만들고 RUN_DEPLOY=true 배포 실험
 ```
