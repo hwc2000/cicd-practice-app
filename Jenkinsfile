@@ -106,9 +106,13 @@ pipeline {
                         echo "pytest-output.log not found"
                     fi
                 } > debug-agent-input.md
-                python3 scripts/debug_agent.py --input debug-agent-input.md --output debug-agent-report.md
-                python3 scripts/run_debug_graph.py --input debug-agent-input.md --output debug-graph-state.json
-                python3 scripts/run_langgraph_debug.py --input debug-agent-input.md --output debug-langgraph-state.json
+                PYTHON_BIN=.venv/bin/python
+                if [ ! -x "$PYTHON_BIN" ]; then
+                    PYTHON_BIN=python3
+                fi
+                "$PYTHON_BIN" scripts/debug_agent.py --input debug-agent-input.md --output debug-agent-report.md
+                "$PYTHON_BIN" scripts/run_debug_graph.py --input debug-agent-input.md --output debug-graph-state.json
+                "$PYTHON_BIN" scripts/run_langgraph_debug.py --input debug-agent-input.md --output debug-langgraph-state.json
                 exit 0
             '''
             archiveArtifacts artifacts: 'debug-agent-input.md, debug-agent-report.md, debug-graph-state.json, debug-langgraph-state.json, pytest-output.log', allowEmptyArchive: true
