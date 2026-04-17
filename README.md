@@ -149,6 +149,7 @@ prompts/debug-agent-system.md와 prompts/debug-agent-user.md 추가
 docs/tool-contract-debug-agent.md에 tool contract 정리
 docs/langgraph-debug-agent-plan.md에 graph state/node/tool 경계 설계
 scripts/run_debug_graph.py로 LangGraph 의존성 없는 local graph flow 작성
+docs/virtualbox-network-notes.md에 Jenkins VM 네트워크와 Kubernetes 실습 병행 메모 정리
 
 다음:
 local graph runner를 Jenkins artifact 입력으로 실행해보고 실제 LangGraph StateGraph로 옮길지 결정
