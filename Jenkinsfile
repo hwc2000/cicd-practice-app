@@ -92,10 +92,11 @@ pipeline {
                         git show --stat --format="" HEAD
                     fi
                 } > debug-agent-input.md
+                python3 scripts/debug_agent.py --input debug-agent-input.md --output debug-agent-report.md
                 exit 0
             '''
-            archiveArtifacts artifacts: 'debug-agent-input.md', allowEmptyArchive: true
-            echo 'CI/CD pipeline failed. Use the Jenkins console log and debug-agent-input.md as Debug Agent input.'
+            archiveArtifacts artifacts: 'debug-agent-input.md, debug-agent-report.md', allowEmptyArchive: true
+            echo 'CI/CD pipeline failed. Debug Agent input and report were archived.'
         }
         success {
             echo 'CI/CD pipeline succeeded.'

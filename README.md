@@ -4,7 +4,7 @@ FastAPI 기반 CI/CD 실습 앱입니다. 이 저장소의 목적은 Jenkins 자
 
 ## Current Status
 
-2026-04-16 기준으로 아래까지 완료했습니다.
+2026-04-17 기준으로 아래까지 완료했습니다.
 
 ```text
 1. GitHub repo push 완료
@@ -23,6 +23,7 @@ FastAPI 기반 CI/CD 실습 앱입니다. 이 저장소의 목적은 Jenkins 자
 14. 실패 원인 수정 후 Jenkins SUCCESS 재확인
 15. Debug Agent 입력 예시 문서 추가
 16. 초기 Debug Agent 목업 스크립트 추가
+17. Jenkins 실패 시 Debug Agent 리포트 artifact 자동 생성 연결
 ```
 
 첫 실패도 기록했습니다.
@@ -135,9 +136,10 @@ debug-agent-input.md 확인
 docs/debug-agent-example.md 작성
 scripts/debug_agent.py 초기 목업 작성
 docs/debug-agent-report.md 생성 확인
+Jenkins failure post 단계에서 debug-agent-report.md artifact 생성 연결
 
 다음:
-Jenkins 실패 시 Debug Agent 리포트를 자동 생성하도록 연결
+의도적 실패로 Jenkins artifact에 debug-agent-input.md와 debug-agent-report.md가 함께 남는지 확인
 나중에 OpenAI API 기반 Debug Agent로 확장
 ```
 
