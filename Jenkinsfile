@@ -32,7 +32,14 @@ pipeline {
 
         stage('Test') {
             steps {
-                sh '. .venv/bin/activate && PYTHONPATH=. pytest -q'
+                sh '''
+                    . .venv/bin/activate
+                    set +e
+                    PYTHONPATH=. pytest -q > pytest-output.log 2>&1
+                    test_status=$?
+                    cat pytest-output.log
+                    exit $test_status
+                '''
             }
         }
 
@@ -91,11 +98,18 @@ pipeline {
                     else
                         git show --stat --format="" HEAD
                     fi
+                    echo
+                    echo "## Pytest Output"
+                    if [ -f pytest-output.log ]; then
+                        cat pytest-output.log
+                    else
+                        echo "pytest-output.log not found"
+                    fi
                 } > debug-agent-input.md
                 python3 scripts/debug_agent.py --input debug-agent-input.md --output debug-agent-report.md
                 exit 0
             '''
-            archiveArtifacts artifacts: 'debug-agent-input.md, debug-agent-report.md', allowEmptyArchive: true
+            archiveArtifacts artifacts: 'debug-agent-input.md, debug-agent-report.md, pytest-output.log', allowEmptyArchive: true
             echo 'CI/CD pipeline failed. Debug Agent input and report were archived.'
         }
         success {

@@ -16,9 +16,11 @@ def extract_first(pattern: str, text: str, default: str = "unknown") -> str:
 
 
 def build_report(input_text: str) -> str:
-    failed_test = extract_first(r"^tests/.+::\w+", input_text)
+    failed_test = extract_first(r"^(?:FAILED\s+)?(tests/.+::\w+)", input_text)
     changed_file = extract_first(r"^app/.+", input_text)
-    assertion = extract_first(r"^(AssertionError:.+)$", input_text)
+    assertion = extract_first(r"^E\s+(AssertionError:.+)$", input_text)
+    if assertion == "unknown":
+        assertion = extract_first(r"^(AssertionError:.+)$", input_text)
 
     return f"""# Debug Agent Report
 
