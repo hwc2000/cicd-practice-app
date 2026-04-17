@@ -35,6 +35,8 @@ FastAPI 기반 CI/CD 실습 앱입니다. 이 저장소의 목적은 Jenkins 자
 26. Debug Agent 로직을 agent_tools 패키지로 분리하고 scripts는 CLI wrapper로 정리
 27. LangGraph StateGraph prototype 추가
 28. Jenkins 실패 시 LangGraph state artifact 생성 연결
+29. Jenkins failure post에서 .venv Python 사용하도록 수정
+30. 의도적 실패/복구로 LangGraph state artifact 생성 확인
 ```
 
 첫 실패도 기록했습니다.
@@ -70,6 +72,23 @@ app/main.py 응답을 broken으로 변경
 -> debug-agent-input.md 생성 확인
 -> app/main.py 응답 원복
 -> Jenkins SUCCESS 재확인
+```
+
+현재 실패 빌드에서 보관하는 artifact는 아래와 같습니다.
+
+```text
+debug-agent-input.md
+debug-agent-report.md
+debug-graph-state.json
+debug-langgraph-state.json
+pytest-output.log
+```
+
+주의:
+
+```text
+Jenkins Install stage에서 설치한 Python dependency는 .venv 안에 있습니다.
+failure post 단계에서 LangGraph를 실행하려면 python3 대신 .venv/bin/python을 우선 사용해야 합니다.
 ```
 
 ## Project Direction
@@ -160,9 +179,12 @@ tests/test_debug_agent.py와 tests/test_run_debug_graph.py 추가
 agent_tools/debug_agent.py와 agent_tools/debug_graph.py에 실제 tool/graph 로직 분리
 agent_tools/langgraph_debug.py와 scripts/run_langgraph_debug.py 추가
 Jenkins failure post 단계에서 debug-langgraph-state.json artifact 생성 연결
+Jenkins failure post 단계에서 .venv/bin/python 우선 사용하도록 수정
+의도적 실패 후 debug-langgraph-state.json artifact 생성 확인
+복구 후 Jenkins SUCCESS 재확인
 
 다음:
-의도적 실패로 Jenkins artifact에 debug-langgraph-state.json이 남는지 확인
+debug-graph-state.json과 debug-langgraph-state.json 비교 자동화
 나중에 OpenAI API 기반 Debug Agent로 확장
 ```
 
