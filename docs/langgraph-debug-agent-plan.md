@@ -234,7 +234,7 @@ load_artifacts
 -> require_human_review
 ```
 
-Keep Jenkins on `scripts/run_debug_graph.py` until the LangGraph prototype has passed a few CI runs.
+Keep the local runner artifact and the LangGraph artifact side by side until the LangGraph prototype has passed a few CI failure runs.
 
 ## Jenkins Failure Artifact
 
@@ -247,3 +247,13 @@ python3 scripts/run_debug_graph.py \
 ```
 
 The resulting `debug-graph-state.json` is an artifact for graph/harness study. It is not used for deployment or automatic fixes.
+
+After the LangGraph prototype passes CI, Jenkins can also run:
+
+```bash
+python3 scripts/run_langgraph_debug.py \
+  --input debug-agent-input.md \
+  --output debug-langgraph-state.json
+```
+
+The resulting `debug-langgraph-state.json` should be compared with `debug-graph-state.json`.
