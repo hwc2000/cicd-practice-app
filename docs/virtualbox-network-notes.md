@@ -30,13 +30,13 @@ scripts/debug_agent.py
 scripts/run_debug_graph.py
 ```
 
-### 2. 강사님 Kubernetes / VM 네트워크 실습
+### 2. 강사님 k3s / VM 네트워크 실습
 
 목표:
 
 ```text
 VirtualBox VM 네트워크 고정
-나중에 컨테이너 기반 Kubernetes 실습
+나중에 컨테이너 기반 k3s 실습
 ```
 
 이 흐름은 CI-CD Agent와 연결될 수 있지만, 지금은 별도 트랙으로 봅니다.
@@ -48,7 +48,28 @@ VirtualBox Adapter 설정
 Host-only 고정 IP
 NAT / Bridged 차이
 netplan
-나중의 Kubernetes 실습 네트워크
+나중의 k3s 실습 네트워크
+```
+
+## 현재 VM 공유 상태
+
+현재는 k3s 전용 VM을 새로 만든 상태가 아닙니다.
+
+지금은 같은 `jenkins-server` VM을 아래 두 흐름에서 함께 사용하고 있습니다.
+
+```text
+jenkins-server
+= Jenkins CI 서버
+= CI/CD Agent 실험 서버
+= VirtualBox 네트워크 설정 실습 대상
+= 나중 k3s 실습과 연결될 수 있는 네트워크 기준점
+```
+
+주의:
+
+```text
+나중에 k3s 전용 VM, WSL 기반 k3s, k3d, kind 같은 별도 환경을 만들면
+jenkins-server와 k3s 실행 위치를 문서에서 다시 분리한다.
 ```
 
 ## 현재 jenkins-server 네트워크 구성
@@ -269,18 +290,17 @@ SSH: 192.168.56.10
 Jenkins: http://192.168.56.10:8080
 ```
 
-### 나중에 Kubernetes 실습할 때
+### 나중에 k3s 실습할 때
 
-Kubernetes 컨테이너 네트워크와 Jenkins VM 관리 IP는 분리해서 생각합니다.
+k3s의 Kubernetes 네트워크와 Jenkins VM 관리 IP는 분리해서 생각합니다.
 
 ```text
 192.168.56.10
 = Jenkins VM 관리 IP
 = SSH/Jenkins 웹 접속용
 
-Kubernetes Pod/Service/Container network
+k3s Pod/Service/Container network
 = 나중에 별도 실습에서 다룰 네트워크
 ```
 
-처음부터 Jenkins VM IP와 Kubernetes 내부 네트워크를 섞어 생각하지 않습니다.
-
+처음부터 Jenkins VM IP와 k3s 내부 Kubernetes 네트워크를 섞어 생각하지 않습니다.
