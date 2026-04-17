@@ -28,6 +28,7 @@ FastAPI 기반 CI/CD 실습 앱입니다. 이 저장소의 목적은 Jenkins 자
 19. Debug Agent 목업 스크립트를 pytest 로그 기반 일반형 리포트로 개선
 20. Debug Agent system/user prompt 템플릿 분리
 21. Debug Agent를 harness/tool 호출에 대비해 JSON 출력과 함수형 API로 정리
+22. LangGraph 전환 계획 문서 추가
 ```
 
 첫 실패도 기록했습니다.
@@ -145,9 +146,10 @@ pytest-output.log를 Debug Agent 입력에 포함하도록 Jenkinsfile 개선
 scripts/debug_agent.py 하드코딩 리포트 제거 및 실패 테스트/에러/변경 파일 추출형으로 개선
 prompts/debug-agent-system.md와 prompts/debug-agent-user.md 추가
 docs/tool-contract-debug-agent.md에 tool contract 정리
+docs/langgraph-debug-agent-plan.md에 graph state/node/tool 경계 설계
 
 다음:
-prompt 템플릿을 사용한 Debug Agent 리포트가 Jenkins 실패 artifact에서 기대대로 생성되는지 확인
+로컬 LangGraph 스타일 runner prototype 작성
 나중에 OpenAI API 기반 Debug Agent로 확장
 ```
 
