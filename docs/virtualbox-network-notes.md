@@ -85,6 +85,70 @@ git status
 
 현재는 Jenkins CI 서버와 강사님 네트워크/k3s 실습 파일이 같은 `jenkins-server` VM 안에 같이 있을 수 있습니다. 헷갈리지 않도록 CI/CD Agent 실험 repo와 강사님 실습 repo는 목적을 분리해서 봅니다.
 
+WSL에 잘못 clone한 강사님 repo가 있으면 지웁니다.
+
+```bash
+cd ~/workspace/hw/academy
+ls -al instructor-repos
+rm -rf instructor-repos
+```
+
+주의:
+
+```text
+위 rm 명령은 WSL에 있는 잘못된 복사본만 지울 때 사용한다.
+cicd-practice-app은 지우지 않는다.
+```
+
+`jenkins-server` VM 안에서 다시 clone하는 기준 명령은 아래와 같습니다.
+
+```bash
+ssh kyung@192.168.56.10
+
+mkdir -p ~/workspace/hw/academy
+cd ~/workspace/hw/academy
+
+git clone playdata2@221.151.189.156:/home/playdata2/repos instructor-repos
+cd instructor-repos
+git fetch -a
+git checkout service
+
+pwd
+git branch
+git status
+```
+
+강사님 repo에서 현재까지 진행한 실습 메모:
+
+```bash
+sudo sed -i 's/archive.ubuntu.com/mirror.navercorp.com/g' /etc/apt/sources.list.d/ubuntu.sources
+sudo sed -i 's/security.ubuntu.com/mirror.navercorp.com/g' /etc/apt/sources.list.d/ubuntu.sources
+
+sudo apt update
+sudo apt install python3-pip -y
+
+pip3 install uv --break-system-package
+
+python3 -m uv venv
+source .venv/bin/activate
+
+curl -LsSf https://astral.sh/uv/install.sh | sh
+source $HOME/.local/bin/env
+
+sudo apt-get install python3-dev default-libmysqlclient-dev build-essential pkg-config
+
+uv pip install -r requirements.txt
+
+sudo vim /etc/hosts
+```
+
+주의:
+
+```text
+apt mirror 변경, python3-pip 설치, mysqlclient 빌드 패키지 설치, /etc/hosts 수정은 jenkins-server VM 안에서 수행한 실습이다.
+WSL의 cicd-practice-app 개발 환경에서 수행한 것이 아니다.
+```
+
 ## 현재 VM 공유 상태
 
 현재는 k3s 전용 VM을 새로 만든 상태가 아닙니다.
