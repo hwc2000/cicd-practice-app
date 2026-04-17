@@ -51,6 +51,21 @@ netplan
 나중의 k3s 실습 네트워크
 ```
 
+강사님 실습 저장소는 현재 WSL 개발 환경에 따로 clone해 두었습니다.
+
+```text
+Path:
+~/workspace/hw/academy/instructor-repos
+
+Remote:
+playdata2@221.151.189.156:/home/playdata2/repos
+
+Current branch:
+service
+```
+
+이 저장소는 `jenkins-server` VM 안에 둔 것이 아닙니다. Jenkins VM은 CI 서버와 네트워크 실습 대상 역할로 유지하고, 강사님 코드는 WSL에서 확인합니다.
+
 ## 현재 VM 공유 상태
 
 현재는 k3s 전용 VM을 새로 만든 상태가 아닙니다.
