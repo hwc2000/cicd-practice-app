@@ -196,3 +196,12 @@ It should:
 
 Only after that works should Jenkins call the graph runner.
 
+## Local Runner Command
+
+```bash
+python3 scripts/run_debug_graph.py \
+  --input docs/debug-agent-example.md \
+  --output /tmp/debug-graph-state.json
+```
+
+This runner does not import LangGraph yet. It keeps the same node shape so the functions can later move into a real `StateGraph`.
