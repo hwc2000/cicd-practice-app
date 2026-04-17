@@ -1,10 +1,4 @@
-import sys
-from pathlib import Path
-
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
-
-from debug_agent import analyze_failure, build_report
+from agent_tools.debug_agent import analyze_failure, build_report
 
 
 CI_FAILURE_INPUT = """# Debug Agent Input
@@ -44,4 +38,3 @@ def test_build_report_renders_human_review_sections():
     assert "app/main.py" in report
     assert "manual" not in report.lower()
     assert "PYTHONPATH=. pytest -q" in report
-

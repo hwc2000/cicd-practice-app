@@ -36,7 +36,7 @@ python3 scripts/debug_agent.py \
 ## Python Usage
 
 ```python
-from scripts.debug_agent import analyze_failure
+from agent_tools.debug_agent import analyze_failure
 
 analysis = analyze_failure(input_text, system_prompt=system_prompt, user_prompt=user_prompt)
 ```
@@ -74,4 +74,3 @@ It must not:
 - Push commits
 - Modify application source files automatically
 - Hide uncertainty when CI input is incomplete
-

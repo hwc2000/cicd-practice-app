@@ -1,10 +1,4 @@
-import sys
-from pathlib import Path
-
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
-
-from run_debug_graph import public_state, run_graph
+from agent_tools.debug_graph import public_state, run_graph
 
 
 def test_run_graph_returns_manual_review_state(tmp_path):
@@ -58,4 +52,3 @@ def test_public_state_hides_full_prompt_and_report():
     assert len(result["rendered_user_prompt_preview"]) == 500
     assert len(result["report_markdown_preview"]) == 500
     assert result["decision"] == "manual_review_required"
-

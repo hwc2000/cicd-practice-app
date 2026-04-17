@@ -11,6 +11,7 @@ Jenkins failure
 -> debug-agent-input.md
 -> pytest-output.log
 -> scripts/debug_agent.py
+-> agent_tools.debug_agent
 -> debug-agent-report.md
 -> optional JSON analysis
 ```
