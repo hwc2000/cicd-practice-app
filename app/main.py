@@ -5,7 +5,7 @@ app = FastAPI(title="CI/CD Practice App")
 
 @app.get("/")
 def read_root():
-    return {"message": "hello cicd"}
+    return {"message": "broken"}
 
 
 @app.get("/health")
