@@ -185,9 +185,10 @@ Jenkins failure post 단계에서 .venv/bin/python 우선 사용하도록 수정
 복구 후 Jenkins SUCCESS 재확인
 강사님 실습 저장소는 WSL의 ~/workspace/hw/academy/instructor-repos에 clone하고 service 브랜치 checkout
 agent_tools/compare_graph_states.py와 scripts/compare_graph_states.py 추가
+Jenkins failure post 단계에서 debug-graph-compare.json artifact 생성 연결
 
 다음:
-Jenkins failure post 단계에서 debug-graph-compare.json artifact 생성 연결
+의도적 실패로 Jenkins artifact에 debug-graph-compare.json이 남고 matched=true인지 확인
 나중에 OpenAI API 기반 Debug Agent로 확장
 ```
 

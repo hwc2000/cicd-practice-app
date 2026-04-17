@@ -113,10 +113,11 @@ pipeline {
                 "$PYTHON_BIN" scripts/debug_agent.py --input debug-agent-input.md --output debug-agent-report.md
                 "$PYTHON_BIN" scripts/run_debug_graph.py --input debug-agent-input.md --output debug-graph-state.json
                 "$PYTHON_BIN" scripts/run_langgraph_debug.py --input debug-agent-input.md --output debug-langgraph-state.json
+                "$PYTHON_BIN" scripts/compare_graph_states.py --local debug-graph-state.json --langgraph debug-langgraph-state.json --output debug-graph-compare.json
                 exit 0
             '''
-            archiveArtifacts artifacts: 'debug-agent-input.md, debug-agent-report.md, debug-graph-state.json, debug-langgraph-state.json, pytest-output.log', allowEmptyArchive: true
-            echo 'CI/CD pipeline failed. Debug Agent input, reports, and graph states were archived.'
+            archiveArtifacts artifacts: 'debug-agent-input.md, debug-agent-report.md, debug-graph-state.json, debug-langgraph-state.json, debug-graph-compare.json, pytest-output.log', allowEmptyArchive: true
+            echo 'CI/CD pipeline failed. Debug Agent input, reports, graph states, and comparison were archived.'
         }
         success {
             echo 'CI/CD pipeline succeeded.'
