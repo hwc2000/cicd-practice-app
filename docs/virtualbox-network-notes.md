@@ -51,11 +51,11 @@ netplan
 나중의 k3s 실습 네트워크
 ```
 
-강사님 실습 저장소는 현재 WSL 개발 환경에 따로 clone해 두었습니다.
+강사님 실습 저장소는 WSL 개발 환경이 아니라 `jenkins-server` VM에 SSH로 접속한 뒤 clone했습니다.
 
 ```text
-Path:
-~/workspace/hw/academy/instructor-repos
+Location:
+jenkins-server VM 안
 
 Remote:
 playdata2@221.151.189.156:/home/playdata2/repos
@@ -64,7 +64,26 @@ Current branch:
 service
 ```
 
-이 저장소는 `jenkins-server` VM 안에 둔 것이 아닙니다. Jenkins VM은 CI 서버와 네트워크 실습 대상 역할로 유지하고, 강사님 코드는 WSL에서 확인합니다.
+주의:
+
+```text
+이 저장소는 WSL의 cicd-practice-app 옆에 있는 것이 아니다.
+SSH 터미널에서 kyung@jenkins-server 상태로 들어간 뒤 확인한다.
+정확한 clone 위치는 jenkins-server 안에서 `pwd`로 확인한다.
+checkout은 service 브랜치만 사용한다.
+```
+
+확인 명령:
+
+```bash
+ssh kyung@192.168.56.10
+cd <강사님 repo를 clone한 경로>
+pwd
+git branch
+git status
+```
+
+현재는 Jenkins CI 서버와 강사님 네트워크/k3s 실습 파일이 같은 `jenkins-server` VM 안에 같이 있을 수 있습니다. 헷갈리지 않도록 CI/CD Agent 실험 repo와 강사님 실습 repo는 목적을 분리해서 봅니다.
 
 ## 현재 VM 공유 상태
 

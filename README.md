@@ -39,6 +39,8 @@ FastAPI 기반 CI/CD 실습 앱입니다. 이 저장소의 목적은 Jenkins 자
 30. 의도적 실패/복구로 LangGraph state artifact 생성 확인
 31. local graph와 LangGraph state 비교 tool 추가
 32. OpenAI Debug Agent용 .env.example, 선택 실행 CLI, 인터페이스 문서 추가
+33. OpenAI API key 연결 후 로컬에서 OpenAI Debug Agent 리포트 생성 확인
+34. OpenAI Debug Agent 사람이 읽는 리포트는 한국어로 출력하도록 prompt 수정
 ```
 
 첫 실패도 기록했습니다.
@@ -185,15 +187,17 @@ Jenkins failure post 단계에서 debug-langgraph-state.json artifact 생성 연
 Jenkins failure post 단계에서 .venv/bin/python 우선 사용하도록 수정
 의도적 실패 후 debug-langgraph-state.json artifact 생성 확인
 복구 후 Jenkins SUCCESS 재확인
-강사님 실습 저장소는 WSL의 ~/workspace/hw/academy/instructor-repos에 clone하고 service 브랜치 checkout
+강사님 실습 저장소는 jenkins-server SSH 세션 안에서 clone하고 service 브랜치 checkout
 agent_tools/compare_graph_states.py와 scripts/compare_graph_states.py 추가
 Jenkins failure post 단계에서 debug-graph-compare.json artifact 생성 연결
 의도적 실패에서 debug-graph-compare.json matched=true 확인 후 복구 빌드 SUCCESS 재확인
 .env.example과 scripts/run_openai_debug_agent.py 추가
 docs/openai-debug-agent-interface.md에 OpenAI 연결 경계와 tool/harness 대상 함수 정리
+OpenAI API key 연결 후 docs/openai-debug-agent-report.md 생성 확인
+OpenAI Debug Agent 리포트 출력 언어를 한국어로 변경
 
 다음:
-OpenAI API를 로컬에서 수동 실행해 debug-openai-report.md 생성 확인
+OpenAI 결과를 JSON schema 형태로 고정할지 결정
 결과가 괜찮으면 Jenkins failure artifact에 debug-openai-report.md를 선택적으로 추가
 ```
 
