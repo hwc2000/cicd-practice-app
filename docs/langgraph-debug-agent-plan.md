@@ -194,7 +194,7 @@ It should:
 3. Call the current `analyze_failure` function
 4. Print the graph state as JSON
 
-Only after that works should Jenkins call the graph runner.
+The local runner is now safe to call from the Jenkins failure post step because it has no external LangGraph or LLM dependency.
 
 ## Local Runner Command
 
@@ -205,3 +205,15 @@ python3 scripts/run_debug_graph.py \
 ```
 
 This runner does not import LangGraph yet. It keeps the same node shape so the functions can later move into a real `StateGraph`.
+
+## Jenkins Failure Artifact
+
+On CI failure, Jenkins can run:
+
+```bash
+python3 scripts/run_debug_graph.py \
+  --input debug-agent-input.md \
+  --output debug-graph-state.json
+```
+
+The resulting `debug-graph-state.json` is an artifact for graph/harness study. It is not used for deployment or automatic fixes.

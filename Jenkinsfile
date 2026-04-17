@@ -107,10 +107,11 @@ pipeline {
                     fi
                 } > debug-agent-input.md
                 python3 scripts/debug_agent.py --input debug-agent-input.md --output debug-agent-report.md
+                python3 scripts/run_debug_graph.py --input debug-agent-input.md --output debug-graph-state.json
                 exit 0
             '''
-            archiveArtifacts artifacts: 'debug-agent-input.md, debug-agent-report.md, pytest-output.log', allowEmptyArchive: true
-            echo 'CI/CD pipeline failed. Debug Agent input and report were archived.'
+            archiveArtifacts artifacts: 'debug-agent-input.md, debug-agent-report.md, debug-graph-state.json, pytest-output.log', allowEmptyArchive: true
+            echo 'CI/CD pipeline failed. Debug Agent input, report, and graph state were archived.'
         }
         success {
             echo 'CI/CD pipeline succeeded.'

@@ -30,6 +30,7 @@ FastAPI 기반 CI/CD 실습 앱입니다. 이 저장소의 목적은 Jenkins 자
 21. Debug Agent를 harness/tool 호출에 대비해 JSON 출력과 함수형 API로 정리
 22. LangGraph 전환 계획 문서 추가
 23. LangGraph 스타일 로컬 graph runner prototype 추가
+24. Jenkins 실패 시 local graph runner state artifact 생성 연결
 ```
 
 첫 실패도 기록했습니다.
@@ -150,9 +151,10 @@ docs/tool-contract-debug-agent.md에 tool contract 정리
 docs/langgraph-debug-agent-plan.md에 graph state/node/tool 경계 설계
 scripts/run_debug_graph.py로 LangGraph 의존성 없는 local graph flow 작성
 docs/virtualbox-network-notes.md에 Jenkins VM 네트워크와 Kubernetes 실습 병행 메모 정리
+Jenkins failure post 단계에서 debug-graph-state.json artifact 생성 연결
 
 다음:
-local graph runner를 Jenkins artifact 입력으로 실행해보고 실제 LangGraph StateGraph로 옮길지 결정
+의도적 실패로 Jenkins artifact에 debug-graph-state.json이 남는지 확인
 나중에 OpenAI API 기반 Debug Agent로 확장
 ```
 
