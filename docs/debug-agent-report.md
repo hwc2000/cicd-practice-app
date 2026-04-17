@@ -1,5 +1,12 @@
 # Debug Agent Report
 
+## Prompt Context
+
+```text
+System prompt: 93 words
+User prompt: 189 words
+```
+
 ## Failure Summary
 
 Jenkins failed during pytest.

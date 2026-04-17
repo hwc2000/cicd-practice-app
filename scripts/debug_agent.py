@@ -8,6 +8,32 @@ import re
 from pathlib import Path
 
 
+DEFAULT_SYSTEM_PROMPT = Path("prompts/debug-agent-system.md")
+DEFAULT_USER_PROMPT = Path("prompts/debug-agent-user.md")
+
+
+def read_prompt(path: Path) -> str:
+    if not path.exists():
+        return ""
+    return path.read_text(encoding="utf-8").strip()
+
+
+def render_user_prompt(template: str, input_text: str) -> str:
+    return template.replace("{{DEBUG_AGENT_INPUT}}", input_text.strip())
+
+
+def summarize_prompt(system_prompt: str, user_prompt: str) -> str:
+    if not system_prompt and not user_prompt:
+        return "No prompt files were loaded."
+
+    sections = []
+    if system_prompt:
+        sections.append(f"System prompt: {len(system_prompt.split())} words")
+    if user_prompt:
+        sections.append(f"User prompt: {len(user_prompt.split())} words")
+    return "\n".join(sections)
+
+
 def extract_section(text: str, heading: str) -> str:
     pattern = rf"^## {re.escape(heading)}\n(?P<body>.*?)(?=^## |\Z)"
     match = re.search(pattern, text, re.MULTILINE | re.DOTALL)
@@ -81,14 +107,21 @@ def build_fix_direction(suspected_files: list[str], failed_tests: list[str]) -> 
     return "Start from the pytest output, reproduce locally, then inspect the files named in the failing tests."
 
 
-def build_report(input_text: str) -> str:
+def build_report(input_text: str, system_prompt: str = "", user_prompt: str = "") -> str:
     failed_tests = extract_failed_tests(input_text)
     error_lines = extract_error_lines(input_text)
     changed_files = extract_changed_files(input_text)
     suspected_files = choose_suspected_files(changed_files, failed_tests)
     fix_direction = build_fix_direction(suspected_files, failed_tests)
+    prompt_summary = summarize_prompt(system_prompt, user_prompt)
 
     return f"""# Debug Agent Report
+
+## Prompt Context
+
+```text
+{prompt_summary}
+```
 
 ## Failure Summary
 
@@ -145,16 +178,32 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Generate a debug report from CI failure input.")
     parser.add_argument("--input", default="docs/debug-agent-example.md")
     parser.add_argument("--output", default="docs/debug-agent-report.md")
+    parser.add_argument("--system-prompt", default=str(DEFAULT_SYSTEM_PROMPT))
+    parser.add_argument("--user-prompt", default=str(DEFAULT_USER_PROMPT))
+    parser.add_argument(
+        "--render-prompt-output",
+        default="",
+        help="Optional path for the fully rendered user prompt, useful before connecting an LLM API.",
+    )
     args = parser.parse_args()
 
     input_path = Path(args.input)
     output_path = Path(args.output)
+    system_prompt_path = Path(args.system_prompt)
+    user_prompt_path = Path(args.user_prompt)
 
     input_text = input_path.read_text(encoding="utf-8")
-    report = build_report(input_text)
+    system_prompt = read_prompt(system_prompt_path)
+    user_prompt_template = read_prompt(user_prompt_path)
+    rendered_user_prompt = render_user_prompt(user_prompt_template, input_text)
+    report = build_report(input_text, system_prompt=system_prompt, user_prompt=rendered_user_prompt)
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(report, encoding="utf-8")
+    if args.render_prompt_output:
+        render_path = Path(args.render_prompt_output)
+        render_path.parent.mkdir(parents=True, exist_ok=True)
+        render_path.write_text(rendered_user_prompt, encoding="utf-8")
     print(f"Wrote {output_path}")
 
 
