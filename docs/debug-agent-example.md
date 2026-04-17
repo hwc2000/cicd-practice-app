@@ -9,7 +9,7 @@ Analyze a Jenkins CI failure and suggest a safe fix.
 - Jenkins console output
 - debug-agent-input.md
 - recent git diff
-- failed test name
+- pytest-output.log
 
 ## Failure Summary
 
@@ -33,13 +33,22 @@ AssertionError: assert {'message': 'broken'} == {'message': 'hello cicd'}
 app/main.py
 ```
 
+## Pytest Output
+
+```text
+FAILED tests/test_main.py::test_read_root - AssertionError: assert {'message': 'broken'} == {'message': 'hello cicd'}
+E       AssertionError: assert {'message': 'broken'} == {'message': 'hello cicd'}
+```
+
 ## Expected Debug Agent Output
 
 - Failure summary
+- Failed tests
+- Error snippet
+- Changed files
 - Suspected files
-- Root cause
 - Fix direction
-- Patch draft
+- Human review checklist
 - Verification commands
 
 ## Ideal Analysis
@@ -48,16 +57,8 @@ The root endpoint response changed from `hello cicd` to `broken`.
 The test expects `{"message": "hello cicd"}`.
 The likely fix is to restore the response in `app/main.py`.
 
-## Patch Draft
-
-```diff
--    return {"message": "broken"}
-+    return {"message": "hello cicd"}
-```
-
 ## Verification
 
 ```bash
 PYTHONPATH=. pytest -q
 ```
-

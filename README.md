@@ -25,6 +25,7 @@ FastAPI 기반 CI/CD 실습 앱입니다. 이 저장소의 목적은 Jenkins 자
 16. 초기 Debug Agent 목업 스크립트 추가
 17. Jenkins 실패 시 Debug Agent 리포트 artifact 자동 생성 연결
 18. pytest 실패 출력을 pytest-output.log artifact로 저장하도록 연결
+19. Debug Agent 목업 스크립트를 pytest 로그 기반 일반형 리포트로 개선
 ```
 
 첫 실패도 기록했습니다.
@@ -139,9 +140,10 @@ scripts/debug_agent.py 초기 목업 작성
 docs/debug-agent-report.md 생성 확인
 Jenkins failure post 단계에서 debug-agent-report.md artifact 생성 연결
 pytest-output.log를 Debug Agent 입력에 포함하도록 Jenkinsfile 개선
+scripts/debug_agent.py 하드코딩 리포트 제거 및 실패 테스트/에러/변경 파일 추출형으로 개선
 
 다음:
-의도적 실패로 Jenkins artifact에 pytest-output.log까지 함께 남는지 확인
+일반형 Debug Agent 리포트가 Jenkins 실패 artifact에서 기대대로 생성되는지 확인
 나중에 OpenAI API 기반 Debug Agent로 확장
 ```
 
