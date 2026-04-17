@@ -37,6 +37,7 @@ FastAPI 기반 CI/CD 실습 앱입니다. 이 저장소의 목적은 Jenkins 자
 28. Jenkins 실패 시 LangGraph state artifact 생성 연결
 29. Jenkins failure post에서 .venv Python 사용하도록 수정
 30. 의도적 실패/복구로 LangGraph state artifact 생성 확인
+31. local graph와 LangGraph state 비교 tool 추가
 ```
 
 첫 실패도 기록했습니다.
@@ -183,9 +184,10 @@ Jenkins failure post 단계에서 .venv/bin/python 우선 사용하도록 수정
 의도적 실패 후 debug-langgraph-state.json artifact 생성 확인
 복구 후 Jenkins SUCCESS 재확인
 강사님 실습 저장소는 WSL의 ~/workspace/hw/academy/instructor-repos에 clone하고 service 브랜치 checkout
+agent_tools/compare_graph_states.py와 scripts/compare_graph_states.py 추가
 
 다음:
-debug-graph-state.json과 debug-langgraph-state.json 비교 자동화
+Jenkins failure post 단계에서 debug-graph-compare.json artifact 생성 연결
 나중에 OpenAI API 기반 Debug Agent로 확장
 ```
 

@@ -41,11 +41,21 @@ python3 scripts/run_langgraph_debug.py \
   --output debug-langgraph-state.json
 ```
 
+Graph state comparison:
+
+```bash
+python3 scripts/compare_graph_states.py \
+  --local debug-graph-state.json \
+  --langgraph debug-langgraph-state.json \
+  --output debug-graph-compare.json
+```
+
 ## Python Usage
 
 ```python
 from agent_tools.debug_agent import analyze_failure
 from agent_tools.langgraph_debug import run_langgraph
+from agent_tools.compare_graph_states import compare_states
 
 analysis = analyze_failure(input_text, system_prompt=system_prompt, user_prompt=user_prompt)
 ```
