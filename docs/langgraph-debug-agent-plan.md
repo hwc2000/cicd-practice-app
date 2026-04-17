@@ -205,7 +205,36 @@ python3 scripts/run_debug_graph.py \
   --output /tmp/debug-graph-state.json
 ```
 
-This runner does not import LangGraph yet. It keeps the same node shape so the functions can later move into a real `StateGraph`.
+This runner keeps the same node shape as the real `StateGraph` prototype.
+
+## LangGraph StateGraph Prototype
+
+The real LangGraph prototype lives here:
+
+```text
+agent_tools/langgraph_debug.py
+scripts/run_langgraph_debug.py
+```
+
+Command:
+
+```bash
+python3 scripts/run_langgraph_debug.py \
+  --input docs/debug-agent-example.md \
+  --output /tmp/debug-langgraph-state.json
+```
+
+It uses the same nodes as the local runner:
+
+```text
+load_artifacts
+-> render_prompt
+-> analyze_failure_tool
+-> render_report
+-> require_human_review
+```
+
+Keep Jenkins on `scripts/run_debug_graph.py` until the LangGraph prototype has passed a few CI runs.
 
 ## Jenkins Failure Artifact
 

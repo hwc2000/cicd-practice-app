@@ -33,10 +33,19 @@ python3 scripts/debug_agent.py \
   --render-prompt-output debug-agent-rendered-user-prompt.md
 ```
 
+LangGraph state prototype:
+
+```bash
+python3 scripts/run_langgraph_debug.py \
+  --input debug-agent-input.md \
+  --output debug-langgraph-state.json
+```
+
 ## Python Usage
 
 ```python
 from agent_tools.debug_agent import analyze_failure
+from agent_tools.langgraph_debug import run_langgraph
 
 analysis = analyze_failure(input_text, system_prompt=system_prompt, user_prompt=user_prompt)
 ```

@@ -33,6 +33,7 @@ FastAPI 기반 CI/CD 실습 앱입니다. 이 저장소의 목적은 Jenkins 자
 24. Jenkins 실패 시 local graph runner state artifact 생성 연결
 25. Debug Agent tool/graph runner 보호용 pytest 추가
 26. Debug Agent 로직을 agent_tools 패키지로 분리하고 scripts는 CLI wrapper로 정리
+27. LangGraph StateGraph prototype 추가
 ```
 
 첫 실패도 기록했습니다.
@@ -156,9 +157,10 @@ docs/virtualbox-network-notes.md에 Jenkins VM 네트워크와 Kubernetes 실습
 Jenkins failure post 단계에서 debug-graph-state.json artifact 생성 연결
 tests/test_debug_agent.py와 tests/test_run_debug_graph.py 추가
 agent_tools/debug_agent.py와 agent_tools/debug_graph.py에 실제 tool/graph 로직 분리
+agent_tools/langgraph_debug.py와 scripts/run_langgraph_debug.py 추가
 
 다음:
-Debug Agent 테스트를 Jenkins에서 통과시키고 실제 LangGraph 전환 여부 결정
+LangGraph prototype을 Jenkins에서 통과시키고 failure artifact 연결 여부 결정
 나중에 OpenAI API 기반 Debug Agent로 확장
 ```
 
