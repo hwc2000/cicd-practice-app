@@ -1,5 +1,6 @@
 .venv/
 .env
+docs/openai-debug-agent-report.md
 __pycache__/
 .pytest_cache/
 *.pyc

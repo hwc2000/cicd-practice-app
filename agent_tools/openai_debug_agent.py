@@ -106,16 +106,16 @@ def build_openai_input(
         {
             "role": "developer",
             "content": system_prompt.strip()
-            or "You are a CI failure debug assistant. Be concise and require human review before risky changes.",
+            or "너는 CI 실패 분석 도우미다. 짧게 답하고 위험한 변경 전에는 사람 리뷰를 요구한다.",
         },
         {
             "role": "user",
             "content": (
                 f"{rendered_user_prompt.strip()}\n\n"
                 "## Deterministic Local Analysis\n"
-                "Use this as the first source of truth. Do not invent files or tests.\n\n"
+                "이 구조화 분석을 1차 근거로 사용해. 파일명이나 테스트명을 지어내지 마.\n\n"
                 f"```json\n{analysis_json}\n```\n\n"
-                "Return a short markdown report with: summary, likely cause, next fix, and verification."
+                "짧은 한국어 markdown 리포트를 작성해. 항목은 요약, 가능성 높은 원인, 다음 수정, 검증으로 나눠줘."
             ),
         },
     ]
@@ -176,7 +176,7 @@ def run_openai_debug_agent(
 
 
 def render_markdown(result: dict[str, Any]) -> str:
-    return f"""# OpenAI Debug Agent Report
+    return f"""# OpenAI Debug Agent 리포트
 
 ## Provider
 
