@@ -155,6 +155,22 @@ pipeline {
   "log_file": "auto-fix-pytest.log"
 }
 EOF
+                                    cat > auto-fix-summary.md <<EOF
+# Auto-Fix Summary
+
+## Patch Apply
+
+- Result file: \`patch-apply-result.json\`
+- Diff file: \`auto-fix.patch\`
+
+## Verification
+
+- Command: \`PYTHONPATH=. pytest -q\`
+- Exit code: \`$auto_fix_test_status\`
+- Passed: \`$auto_fix_passed\`
+- Log file: \`auto-fix-pytest.log\`
+- Verification file: \`auto-fix-verification.json\`
+EOF
                                 fi
                             fi
                             exit 0
@@ -164,7 +180,7 @@ EOF
                     echo 'OPENAI_DEBUG_AGENT_ENABLED=false, skipping optional OpenAI debug report.'
                 }
             }
-            archiveArtifacts artifacts: 'debug-agent-input.md, debug-agent-report.md, debug-graph-state.json, debug-langgraph-state.json, debug-graph-compare.json, debug-openai-report.md, debug-openai-report.json, patch-apply-result.json, auto-fix.patch, auto-fix-pytest.log, auto-fix-verification.json, pytest-output.log', allowEmptyArchive: true
+            archiveArtifacts artifacts: 'debug-agent-input.md, debug-agent-report.md, debug-graph-state.json, debug-langgraph-state.json, debug-graph-compare.json, debug-openai-report.md, debug-openai-report.json, patch-apply-result.json, auto-fix.patch, auto-fix-pytest.log, auto-fix-verification.json, auto-fix-summary.md, pytest-output.log', allowEmptyArchive: true
             echo 'CI/CD pipeline failed. Debug Agent input, reports, graph states, optional OpenAI reports, auto-fix artifacts, and auto-fix verification artifacts were archived.'
         }
         success {
