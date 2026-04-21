@@ -106,8 +106,10 @@ pipeline {
                         echo "pytest-output.log not found"
                     fi
                 } > debug-agent-input.md
-                PYTHON_BIN=.venv/bin/python
-                if [ ! -x "$PYTHON_BIN" ]; then
+                if [ -x .venv/bin/python ]; then
+                    . .venv/bin/activate
+                    PYTHON_BIN=python
+                else
                     PYTHON_BIN=python3
                 fi
                 "$PYTHON_BIN" scripts/debug_agent.py --input debug-agent-input.md --output debug-agent-report.md
@@ -121,8 +123,10 @@ pipeline {
                     withCredentials([string(credentialsId: 'openai-api-key', variable: 'OPENAI_API_KEY')]) {
                         sh '''
                             set +e
-                            PYTHON_BIN=.venv/bin/python
-                            if [ ! -x "$PYTHON_BIN" ]; then
+                            if [ -x .venv/bin/python ]; then
+                                . .venv/bin/activate
+                                PYTHON_BIN=python
+                            else
                                 PYTHON_BIN=python3
                             fi
                             PYTHONPATH=. OPENAI_DEBUG_AGENT_ENABLED=true "$PYTHON_BIN" scripts/run_openai_debug_agent.py --input debug-agent-input.md --output debug-openai-report.md
@@ -139,7 +143,7 @@ pipeline {
                                     auto_fix_test_status=$?
                                     printf '%s' "$auto_fix_test_status" > .auto-fix-status
                                     cat auto-fix-pytest.log
-                                    python3 - <<'PY'
+                                    python - <<'PY'
 import json
 from pathlib import Path
 
