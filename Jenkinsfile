@@ -183,31 +183,17 @@ summary = f"""# Auto-Fix Summary
 
 Path("auto-fix-summary.md").write_text(summary, encoding="utf-8")
 PY
-                                    python - <<'PY'
-import json
-from pathlib import Path
-
-verification = json.loads(Path("auto-fix-verification.json").read_text(encoding="utf-8"))
-
-next_action = {
-    "auto_fix_passed": verification.get("passed", False),
-    "recommended_next_step": (
-        "prepare_fix_branch_artifacts"
-        if verification.get("passed", False)
-        else "manual_review_required"
-    ),
-    "bundle_artifact": "autofix-bundle.tar.gz",
-    "summary_artifact": "auto-fix-summary.md",
-    "verification_artifact": "auto-fix-verification.json",
-    "deploy_allowed": False,
-    "requires_human_review": True,
+                                    cat > next-action.json <<EOF
+{
+  "auto_fix_passed": $auto_fix_passed,
+  "recommended_next_step": "$([ "$auto_fix_passed" = true ] && echo prepare_fix_branch_artifacts || echo manual_review_required)",
+  "bundle_artifact": "autofix-bundle.tar.gz",
+  "summary_artifact": "auto-fix-summary.md",
+  "verification_artifact": "auto-fix-verification.json",
+  "deploy_allowed": false,
+  "requires_human_review": true
 }
-
-Path("next-action.json").write_text(
-    json.dumps(next_action, ensure_ascii=False, indent=2) + "\n",
-    encoding="utf-8",
-)
-PY
+EOF
                                     mkdir -p autofix-artifacts
                                     cp patch-apply-result.json autofix-artifacts/
                                     cp auto-fix.patch autofix-artifacts/
