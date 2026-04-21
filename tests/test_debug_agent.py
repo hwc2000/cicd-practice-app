@@ -26,6 +26,16 @@ def test_analyze_failure_extracts_pytest_failure_details():
     ]
     assert analysis["changed_files"] == ["app/main.py", "tests/test_main.py"]
     assert analysis["suspected_files"] == ["app/main.py"]
+    assert analysis["patch_candidate"] == {
+        "kind": "replace_text",
+        "target_file": "app/main.py",
+        "find": 'return {"message": "broken"}',
+        "replace": 'return {"message": "hello cicd"}',
+        "reason": "The failing test expects the previous root response value.",
+        "confidence": "high",
+        "safe_to_apply": True,
+    }
+    assert 'return {"message": "broken"} -> return {"message": "hello cicd"}' in analysis["patch_draft"]
     assert analysis["prompt_context"]["system_prompt_loaded"] is True
     assert analysis["prompt_context"]["user_prompt_loaded"] is True
 
@@ -38,3 +48,19 @@ def test_build_report_renders_human_review_sections():
     assert "app/main.py" in report
     assert "manual" not in report.lower()
     assert "PYTHONPATH=. pytest -q" in report
+
+
+def test_analyze_failure_returns_no_patch_candidate_for_unknown_pattern():
+    analysis = analyze_failure(
+        """# Debug Agent Input
+
+## Changed Files
+scripts/deploy.sh
+
+## Pytest Output
+FAILED tests/test_main.py::test_read_root - RuntimeError: boom
+E       RuntimeError: boom
+""",
+    )
+
+    assert analysis["patch_candidate"] is None
