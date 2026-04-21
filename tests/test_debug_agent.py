@@ -64,3 +64,22 @@ E       RuntimeError: boom
     )
 
     assert analysis["patch_candidate"] is None
+
+
+def test_analyze_failure_infers_patch_candidate_from_failed_test_even_without_app_file_change():
+    analysis = analyze_failure(
+        """# Debug Agent Input
+
+## Changed Files
+agent_tools/patch_candidate.py
+tests/test_patch_candidate.py
+
+## Pytest Output
+FAILED tests/test_main.py::test_read_root - AssertionError: assert {'message': 'broken'} == {'message': 'hello cicd'}
+E       AssertionError: assert {'message': 'broken'} == {'message': 'hello cicd'}
+""",
+    )
+
+    assert analysis["patch_candidate"] is not None
+    assert analysis["patch_candidate"]["target_file"] == "app/main.py"
+    assert analysis["patch_candidate"]["replace"] == 'return {"message": "hello cicd"}'

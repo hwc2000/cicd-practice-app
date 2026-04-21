@@ -110,10 +110,10 @@ def build_fix_direction(suspected_files: list[str], failed_tests: list[str]) -> 
 
 def infer_patch_candidate(
     suspected_files: list[str],
+    failed_tests: list[str],
     error_lines: list[str],
 ) -> dict[str, Any] | None:
-    if len(suspected_files) != 1 or suspected_files[0] != "app/main.py":
-        return None
+    app_main_is_relevant = "app/main.py" in suspected_files or "tests/test_main.py::test_read_root" in failed_tests
 
     for line in error_lines:
         match = re.search(
@@ -121,6 +121,8 @@ def infer_patch_candidate(
             line,
         )
         if not match:
+            continue
+        if not app_main_is_relevant:
             continue
 
         actual = match.group("actual")
@@ -145,7 +147,7 @@ def analyze_failure(input_text: str, system_prompt: str = "", user_prompt: str =
     changed_files = extract_changed_files(input_text)
     suspected_files = choose_suspected_files(changed_files, failed_tests)
     fix_direction = build_fix_direction(suspected_files, failed_tests)
-    patch_candidate = infer_patch_candidate(suspected_files, error_lines)
+    patch_candidate = infer_patch_candidate(suspected_files, failed_tests, error_lines)
     prompt_summary = summarize_prompt(system_prompt, user_prompt)
 
     return {
