@@ -155,22 +155,34 @@ pipeline {
   "log_file": "auto-fix-pytest.log"
 }
 EOF
-                                    cat > auto-fix-summary.md <<EOF
-# Auto-Fix Summary
+                                    python - <<'PY'
+import json
+from pathlib import Path
+
+patch_result = json.loads(Path("patch-apply-result.json").read_text(encoding="utf-8"))
+verification = json.loads(Path("auto-fix-verification.json").read_text(encoding="utf-8"))
+
+summary = f"""# Auto-Fix Summary
 
 ## Patch Apply
 
+- Target file: `{patch_result.get("target_file", "unknown")}`
+- Applied: `{patch_result.get("applied", False)}`
+- Match count: `{patch_result.get("occurrences", 0)}`
 - Result file: `patch-apply-result.json`
 - Diff file: `auto-fix.patch`
 
 ## Verification
 
-- Command: `PYTHONPATH=. pytest -q`
-- Exit code: `$auto_fix_test_status`
-- Passed: `$auto_fix_passed`
-- Log file: `auto-fix-pytest.log`
+- Command: `{verification.get("verification_command", "unknown")}`
+- Exit code: `{verification.get("exit_code", "unknown")}`
+- Passed: `{verification.get("passed", False)}`
+- Log file: `{verification.get("log_file", "auto-fix-pytest.log")}`
 - Verification file: `auto-fix-verification.json`
-EOF
+"""
+
+Path("auto-fix-summary.md").write_text(summary, encoding="utf-8")
+PY
                                 fi
                             fi
                             exit 0
