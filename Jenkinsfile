@@ -141,22 +141,20 @@ pipeline {
                                     set +e
                                     PYTHONPATH=. pytest -q > auto-fix-pytest.log 2>&1
                                     auto_fix_test_status=$?
-                                    printf '%s' "$auto_fix_test_status" > .auto-fix-status
                                     cat auto-fix-pytest.log
-                                    python - <<'PY'
-import json
-from pathlib import Path
-
-result_path = Path("auto-fix-verification.json")
-status = int(Path(".auto-fix-status").read_text(encoding="utf-8").strip())
-result = {
-    "verification_command": "PYTHONPATH=. pytest -q",
-    "exit_code": status,
-    "passed": status == 0,
-    "log_file": "auto-fix-pytest.log",
+                                    if [ "$auto_fix_test_status" -eq 0 ]; then
+                                        auto_fix_passed=true
+                                    else
+                                        auto_fix_passed=false
+                                    fi
+                                    cat > auto-fix-verification.json <<EOF
+{
+  "verification_command": "PYTHONPATH=. pytest -q",
+  "exit_code": $auto_fix_test_status,
+  "passed": $auto_fix_passed,
+  "log_file": "auto-fix-pytest.log"
 }
-result_path.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-PY
+EOF
                                 fi
                             fi
                             exit 0
