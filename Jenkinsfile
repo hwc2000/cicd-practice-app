@@ -127,6 +127,13 @@ pipeline {
                             fi
                             PYTHONPATH=. OPENAI_DEBUG_AGENT_ENABLED=true "$PYTHON_BIN" scripts/run_openai_debug_agent.py --input debug-agent-input.md --output debug-openai-report.md
                             PYTHONPATH=. OPENAI_DEBUG_AGENT_ENABLED=true "$PYTHON_BIN" scripts/run_openai_debug_agent.py --input debug-agent-input.md --output debug-openai-report.json --format json
+                            if [ -f debug-openai-report.json ]; then
+                                PYTHONPATH=. "$PYTHON_BIN" scripts/apply_patch_candidate.py --input debug-openai-report.json --workspace . --apply --output patch-apply-result.json
+                                git diff -- app tests > auto-fix.patch || true
+                                if [ ! -s auto-fix.patch ]; then
+                                    echo "No workspace diff was produced by patch candidate application." > auto-fix.patch
+                                fi
+                            fi
                             exit 0
                         '''
                     }
@@ -134,8 +141,8 @@ pipeline {
                     echo 'OPENAI_DEBUG_AGENT_ENABLED=false, skipping optional OpenAI debug report.'
                 }
             }
-            archiveArtifacts artifacts: 'debug-agent-input.md, debug-agent-report.md, debug-graph-state.json, debug-langgraph-state.json, debug-graph-compare.json, debug-openai-report.md, debug-openai-report.json, pytest-output.log', allowEmptyArchive: true
-            echo 'CI/CD pipeline failed. Debug Agent input, reports, graph states, comparison, and optional OpenAI reports were archived.'
+            archiveArtifacts artifacts: 'debug-agent-input.md, debug-agent-report.md, debug-graph-state.json, debug-langgraph-state.json, debug-graph-compare.json, debug-openai-report.md, debug-openai-report.json, patch-apply-result.json, auto-fix.patch, pytest-output.log', allowEmptyArchive: true
+            echo 'CI/CD pipeline failed. Debug Agent input, reports, graph states, optional OpenAI reports, and auto-fix artifacts were archived.'
         }
         success {
             echo 'CI/CD pipeline succeeded.'
