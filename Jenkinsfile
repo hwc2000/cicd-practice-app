@@ -116,8 +116,26 @@ pipeline {
                 "$PYTHON_BIN" scripts/compare_graph_states.py --local debug-graph-state.json --langgraph debug-langgraph-state.json --output debug-graph-compare.json
                 exit 0
             '''
-            archiveArtifacts artifacts: 'debug-agent-input.md, debug-agent-report.md, debug-graph-state.json, debug-langgraph-state.json, debug-graph-compare.json, pytest-output.log', allowEmptyArchive: true
-            echo 'CI/CD pipeline failed. Debug Agent input, reports, graph states, and comparison were archived.'
+            script {
+                if (params.OPENAI_DEBUG_AGENT_ENABLED) {
+                    withCredentials([string(credentialsId: 'openai-api-key', variable: 'OPENAI_API_KEY')]) {
+                        sh '''
+                            set +e
+                            PYTHON_BIN=.venv/bin/python
+                            if [ ! -x "$PYTHON_BIN" ]; then
+                                PYTHON_BIN=python3
+                            fi
+                            PYTHONPATH=. OPENAI_DEBUG_AGENT_ENABLED=true "$PYTHON_BIN" scripts/run_openai_debug_agent.py --input debug-agent-input.md --output debug-openai-report.md
+                            PYTHONPATH=. OPENAI_DEBUG_AGENT_ENABLED=true "$PYTHON_BIN" scripts/run_openai_debug_agent.py --input debug-agent-input.md --output debug-openai-report.json --format json
+                            exit 0
+                        '''
+                    }
+                } else {
+                    echo 'OPENAI_DEBUG_AGENT_ENABLED=false, skipping optional OpenAI debug report.'
+                }
+            }
+            archiveArtifacts artifacts: 'debug-agent-input.md, debug-agent-report.md, debug-graph-state.json, debug-langgraph-state.json, debug-graph-compare.json, debug-openai-report.md, debug-openai-report.json, pytest-output.log', allowEmptyArchive: true
+            echo 'CI/CD pipeline failed. Debug Agent input, reports, graph states, comparison, and optional OpenAI reports were archived.'
         }
         success {
             echo 'CI/CD pipeline succeeded.'
