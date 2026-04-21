@@ -194,6 +194,17 @@ PY
   "requires_human_review": true
 }
 EOF
+                                    cat > fix-branch-plan.json <<EOF
+{
+  "base_commit": "${GIT_COMMIT:-unknown}",
+  "suggested_branch_name": "autofix/build-${BUILD_NUMBER}",
+  "bundle_artifact": "autofix-bundle.tar.gz",
+  "patch_file": "auto-fix.patch",
+  "verification_passed": $auto_fix_passed,
+  "ready_for_commit": $auto_fix_passed,
+  "requires_human_review": true
+}
+EOF
                                     mkdir -p autofix-artifacts
                                     cp patch-apply-result.json autofix-artifacts/
                                     cp auto-fix.patch autofix-artifacts/
@@ -201,6 +212,7 @@ EOF
                                     cp auto-fix-verification.json autofix-artifacts/
                                     cp auto-fix-summary.md autofix-artifacts/
                                     cp next-action.json autofix-artifacts/
+                                    cp fix-branch-plan.json autofix-artifacts/
                                     tar -czf autofix-bundle.tar.gz autofix-artifacts
                                 fi
                             fi
@@ -211,7 +223,7 @@ EOF
                     echo 'OPENAI_DEBUG_AGENT_ENABLED=false, skipping optional OpenAI debug report.'
                 }
             }
-            archiveArtifacts artifacts: 'debug-agent-input.md, debug-agent-report.md, debug-graph-state.json, debug-langgraph-state.json, debug-graph-compare.json, debug-openai-report.md, debug-openai-report.json, patch-apply-result.json, auto-fix.patch, auto-fix-pytest.log, auto-fix-verification.json, auto-fix-summary.md, next-action.json, autofix-bundle.tar.gz, autofix-artifacts/**, pytest-output.log', allowEmptyArchive: true
+            archiveArtifacts artifacts: 'debug-agent-input.md, debug-agent-report.md, debug-graph-state.json, debug-langgraph-state.json, debug-graph-compare.json, debug-openai-report.md, debug-openai-report.json, patch-apply-result.json, auto-fix.patch, auto-fix-pytest.log, auto-fix-verification.json, auto-fix-summary.md, next-action.json, fix-branch-plan.json, autofix-bundle.tar.gz, autofix-artifacts/**, pytest-output.log', allowEmptyArchive: true
             echo 'CI/CD pipeline failed. Debug Agent input, reports, graph states, optional OpenAI reports, auto-fix artifacts, and auto-fix verification artifacts were archived.'
         }
         success {
