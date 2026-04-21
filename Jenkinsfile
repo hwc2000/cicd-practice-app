@@ -160,16 +160,16 @@ EOF
 
 ## Patch Apply
 
-- Result file: \`patch-apply-result.json\`
-- Diff file: \`auto-fix.patch\`
+- Result file: `patch-apply-result.json`
+- Diff file: `auto-fix.patch`
 
 ## Verification
 
-- Command: \`PYTHONPATH=. pytest -q\`
-- Exit code: \`$auto_fix_test_status\`
-- Passed: \`$auto_fix_passed\`
-- Log file: \`auto-fix-pytest.log\`
-- Verification file: \`auto-fix-verification.json\`
+- Command: `PYTHONPATH=. pytest -q`
+- Exit code: `$auto_fix_test_status`
+- Passed: `$auto_fix_passed`
+- Log file: `auto-fix-pytest.log`
+- Verification file: `auto-fix-verification.json`
 EOF
                                 fi
                             fi
