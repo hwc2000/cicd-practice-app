@@ -183,6 +183,13 @@ summary = f"""# Auto-Fix Summary
 
 Path("auto-fix-summary.md").write_text(summary, encoding="utf-8")
 PY
+                                    mkdir -p autofix-artifacts
+                                    cp patch-apply-result.json autofix-artifacts/
+                                    cp auto-fix.patch autofix-artifacts/
+                                    cp auto-fix-pytest.log autofix-artifacts/
+                                    cp auto-fix-verification.json autofix-artifacts/
+                                    cp auto-fix-summary.md autofix-artifacts/
+                                    tar -czf autofix-bundle.tar.gz autofix-artifacts
                                 fi
                             fi
                             exit 0
@@ -192,7 +199,7 @@ PY
                     echo 'OPENAI_DEBUG_AGENT_ENABLED=false, skipping optional OpenAI debug report.'
                 }
             }
-            archiveArtifacts artifacts: 'debug-agent-input.md, debug-agent-report.md, debug-graph-state.json, debug-langgraph-state.json, debug-graph-compare.json, debug-openai-report.md, debug-openai-report.json, patch-apply-result.json, auto-fix.patch, auto-fix-pytest.log, auto-fix-verification.json, auto-fix-summary.md, pytest-output.log', allowEmptyArchive: true
+            archiveArtifacts artifacts: 'debug-agent-input.md, debug-agent-report.md, debug-graph-state.json, debug-langgraph-state.json, debug-graph-compare.json, debug-openai-report.md, debug-openai-report.json, patch-apply-result.json, auto-fix.patch, auto-fix-pytest.log, auto-fix-verification.json, auto-fix-summary.md, autofix-bundle.tar.gz, autofix-artifacts/**, pytest-output.log', allowEmptyArchive: true
             echo 'CI/CD pipeline failed. Debug Agent input, reports, graph states, optional OpenAI reports, auto-fix artifacts, and auto-fix verification artifacts were archived.'
         }
         success {
