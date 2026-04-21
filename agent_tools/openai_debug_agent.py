@@ -196,6 +196,11 @@ def render_markdown(result: dict[str, Any]) -> str:
 """
 
 
+def render_json(result: dict[str, Any]) -> str:
+    """Render JSON with ASCII escapes to avoid artifact viewer encoding issues."""
+    return json.dumps(result, ensure_ascii=True, indent=2) + "\n"
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run the optional OpenAI-backed Debug Agent.")
     parser.add_argument("--input", default="docs/debug-agent-example.md")
@@ -223,7 +228,7 @@ def main() -> None:
     output_path = Path(args.output)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     if args.format == "json":
-        output_path.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        output_path.write_text(render_json(result), encoding="utf-8")
     else:
         output_path.write_text(render_markdown(result), encoding="utf-8")
 

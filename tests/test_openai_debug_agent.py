@@ -9,6 +9,7 @@ from agent_tools.openai_debug_agent import (
     extract_output_text,
     load_env_file,
     load_config,
+    render_json,
     require_enabled_config,
 )
 
@@ -84,3 +85,17 @@ def test_extract_output_text_supports_response_output_shape():
     )
 
     assert extract_output_text(response) == "first\nsecond"
+
+
+def test_render_json_escapes_non_ascii_text():
+    rendered = render_json(
+        {
+            "provider": "openai",
+            "output_text": "요약",
+            "local_analysis": {"note": "한글"},
+        }
+    )
+
+    assert "\\uc694\\uc57d" in rendered
+    assert "\\ud55c\\uae00" in rendered
+    assert "요약" not in rendered
