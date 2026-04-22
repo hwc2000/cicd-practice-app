@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.utils import normalize_item_name
+
 
 # In-memory store (simulates DB)
 _items: dict[int, dict[str, Any]] = {}
@@ -30,7 +32,7 @@ def create_item(name: str, price: float, quantity: int, discount_percent: float)
     total = calculate_total_price(price, quantity, discount_percent)
     item = {
         "id": _next_id,
-        "name": name,
+        "name": normalize_item_name(name),
         "price": price,
         "quantity": quantity,
         "discount_percent": discount_percent,

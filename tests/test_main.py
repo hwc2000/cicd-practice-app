@@ -68,6 +68,17 @@ def test_create_item():
     assert data["total_price"] == 180.0  # 100 * 2 * 0.9
 
 
+def test_create_item_normalizes_name():
+    response = client.post("/items", json={
+        "name": "   deluxe    widget   pro  ",
+        "price": 100.0,
+        "quantity": 1,
+    })
+    assert response.status_code == 201
+    data = response.json()
+    assert data["name"] == "Deluxe Widget Pro"
+
+
 def test_create_item_no_discount():
     response = client.post("/items", json={
         "name": "Gadget",
