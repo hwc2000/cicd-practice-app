@@ -4,6 +4,12 @@ from __future__ import annotations
 
 from typing import Any
 
+
+def normalize_item_name(name: str) -> str:
+    """Normalize item names by trimming spaces and title-casing words."""
+    return " ".join(name.split()).title()
+
+
 # In-memory store (simulates DB)
 _items: dict[int, dict[str, Any]] = {}
 _next_id: int = 1
