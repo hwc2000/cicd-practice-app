@@ -29,18 +29,37 @@ def calculate_total_price(price: float, quantity: int, discount_percent: float) 
     return round(total, 2)
 
 
+def build_item_record(
+    item_id: int,
+    name: str,
+    price: float,
+    quantity: int,
+    discount_percent: float,
+    total_price: float,
+) -> dict[str, Any]:
+    """Build the canonical item payload used by the API and in-memory store."""
+    return {
+        "id": item_id,
+        "name": normalize_item_name(name),
+        "price": price,
+        "quantity": quantity,
+        "discount_percent": discount_percent,
+        "total_price": total_price,
+    }
+
+
 def create_item(name: str, price: float, quantity: int, discount_percent: float) -> dict[str, Any]:
     """Create a new item and return its data."""
     global _next_id
     total = calculate_total_price(price, quantity, discount_percent)
-    item = {
-        "id": _next_id,
-        "name": name,
-        "price": price,
-        "quantity": quantity,
-        "discount_percent": discount_percent,
-        "total_price": total,
-    }
+    item = build_item_record(
+        item_id=_next_id,
+        name=name,
+        price=price,
+        quantity=quantity,
+        discount_percent=discount_percent,
+        total_price=total,
+    )
     _items[_next_id] = item
     _next_id += 1
     return item
