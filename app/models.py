@@ -10,7 +10,7 @@ class ItemCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
     price: float = Field(..., gt=0)
     quantity: int = Field(default=1, ge=1)
-    discount_percent: float = Field(default=0, ge=0, le=100)
+    discount_percent: float = Field(default=5, ge=0, le=100)
 
 
 class ItemResponse(BaseModel):
