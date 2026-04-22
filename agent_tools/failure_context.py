@@ -89,7 +89,8 @@ def extract_changed_files(text: str) -> list[str]:
 def extract_traceback_files(text: str) -> list[str]:
     matches = re.findall(r'File "([^"]+\.py)"', text)
     normalized = []
-    for match in matches:
+    # Deeper traceback frames usually appear later and are closer to the root cause.
+    for match in reversed(matches):
         path = match.strip()
         if re.match(r"^(app|tests|scripts|docs|agent_tools)/[^\s]+", path):
             normalized.append(path)
@@ -101,19 +102,19 @@ def choose_suspected_files(
     failed_tests: list[str],
     traceback_files: list[str],
 ) -> list[str]:
-    ranked: list[str] = []
-
     app_changed = [path for path in changed_files if path.startswith("app/")]
-    app_traceback = [path for path in traceback_files if path.startswith("app/")]
-    test_files = [test.split("::", 1)[0] for test in failed_tests]
     test_changed = [path for path in changed_files if path.startswith("tests/")]
 
-    for group in (app_traceback, app_changed, traceback_files, test_changed, test_files, changed_files):
-        for path in group:
-            if path not in ranked:
-                ranked.append(path)
+    if app_changed:
+        return app_changed
 
-    return ranked
+    if test_changed:
+        return test_changed
+
+    if traceback_files:
+        return traceback_files
+
+    return changed_files or [test.split("::", 1)[0] for test in failed_tests]
 
 
 def format_list(items: list[str], default: str = "unknown") -> str:
