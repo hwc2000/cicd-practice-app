@@ -5,11 +5,6 @@ from __future__ import annotations
 from typing import Any
 
 
-def normalize_item_name(name: str) -> str:
-    """Normalize item names by trimming spaces and title-casing words."""
-    return " ".join(name.split()).title()
-
-
 # In-memory store (simulates DB)
 _items: dict[int, dict[str, Any]] = {}
 _next_id: int = 1
@@ -29,39 +24,18 @@ def calculate_total_price(price: float, quantity: int, discount_percent: float) 
     return round(total, 2)
 
 
-def build_item_record(
-    item_id: int,
-    name: str,
-    price: float,
-    quantity: int,
-    discount_percent: float,
-    total_price: float,
-    source: str = "api",
-) -> dict[str, Any]:
-    """Build the canonical item payload used by the API and in-memory store."""
-    return {
-        "id": item_id,
-        "name": normalize_item_name(name),
-        "price": price,
-        "quantity": quantity,
-        "discount_percent": discount_percent,
-        "total_price": total_price,
-        "source": source,
-    }
-
-
 def create_item(name: str, price: float, quantity: int, discount_percent: float) -> dict[str, Any]:
     """Create a new item and return its data."""
     global _next_id
     total = calculate_total_price(price, quantity, discount_percent)
-    item = build_item_record(
-        item_id=_next_id,
-        name=name,
-        price=price,
-        quantity=quantity,
-        discount_percent=discount_percent,
-        total_price=total,
-    )
+    item = {
+        "id": _next_id,
+        "name": name,
+        "price": price,
+        "quantity": quantity,
+        "discount_percent": discount_percent,
+        "total_price": total,
+    }
     _items[_next_id] = item
     _next_id += 1
     return item
