@@ -33,7 +33,7 @@ def get_item_endpoint(item_id: int):
     """Get a specific item by ID."""
     item = get_item(item_id)
     if item is None:
-        raise ValueError(f"Item {item_id} not found")
+        raise HTTPException(status_code=404, detail=f"Item {item_id} not found")
     return item
 
 
