@@ -1,0 +1,13 @@
+{
+  "matched": true,
+  "compared_keys": [
+    "analysis.failed_tests",
+    "analysis.error_snippet",
+    "analysis.changed_files",
+    "analysis.suspected_files",
+    "analysis.fix_direction",
+    "decision",
+    "needs_human_review"
+  ],
+  "differences": []
+}

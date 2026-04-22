@@ -1,0 +1,31 @@
+{
+  "action": "commit_push",
+  "test_passed": true,
+  "attempt": 0,
+  "max_attempts": 3,
+  "summary": "Fix verified on attempt 1.",
+  "patch_result": {
+    "target_file": "app/main.py",
+    "applied": true,
+    "occurrences": 1,
+    "find": "return {\"message\": \"broken\"}",
+    "replace": "return {\"message\": \"hello cicd\"}"
+  },
+  "attempts_history": [
+    {
+      "attempt": 0,
+      "test_passed": true,
+      "action": "",
+      "patch_candidate": {
+        "kind": "replace_text",
+        "target_file": "app/main.py",
+        "find": "return {\"message\": \"broken\"}",
+        "replace": "return {\"message\": \"hello cicd\"}",
+        "reason": "The failing test expects the previous root response value.",
+        "confidence": "high",
+        "safe_to_apply": true
+      },
+      "test_log_preview": ".................................                                        [100%]\n33 passed in 4.14s"
+    }
+  ]
+}

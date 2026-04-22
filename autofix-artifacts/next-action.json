@@ -1,0 +1,9 @@
+{
+  "auto_fix_passed": true,
+  "recommended_next_step": "prepare_fix_branch_artifacts",
+  "bundle_artifact": "autofix-bundle.tar.gz",
+  "summary_artifact": "auto-fix-summary.md",
+  "verification_artifact": "auto-fix-verification.json",
+  "deploy_allowed": false,
+  "requires_human_review": true
+}

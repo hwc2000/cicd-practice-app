@@ -1,0 +1,6 @@
+{
+  "verification_command": "PYTHONPATH=. pytest -q",
+  "exit_code": 0,
+  "passed": true,
+  "log_file": "auto-fix-pytest.log"
+}

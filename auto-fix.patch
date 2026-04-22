@@ -1,0 +1,13 @@
+diff --git a/app/main.py b/app/main.py
+index f9fa8ac..0b50ffb 100644
+--- a/app/main.py
++++ b/app/main.py
+@@ -5,7 +5,7 @@ app = FastAPI(title="CI/CD Practice App")
+ 
+ @app.get("/")
+ def read_root():
+-    return {"message": "broken"}
++    return {"message": "hello cicd"}
+ 
+ 
+ @app.get("/health")

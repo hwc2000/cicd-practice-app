@@ -1,0 +1,9 @@
+{
+  "base_commit": "ef5a75893135f0100f0365a6d6f4c8b260f7f0ba",
+  "suggested_branch_name": "autofix/build-47",
+  "bundle_artifact": "autofix-bundle.tar.gz",
+  "patch_file": "auto-fix.patch",
+  "verification_passed": true,
+  "ready_for_commit": true,
+  "requires_human_review": true
+}
