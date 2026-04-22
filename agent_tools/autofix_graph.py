@@ -273,13 +273,6 @@ def run_autofix(initial_state: AutoFixState) -> AutoFixState:
             state = decide_next(state)
             break
 
-        # Save original file before applying
-        target_file = state["patch_candidate"].get("target_file", "")
-        target_path = workspace / target_file
-        original_content: str | None = None
-        if target_path.exists():
-            original_content = target_path.read_text(encoding="utf-8")
-
         # Apply fix
         state = apply_fix(state)
         if state.get("action") == "no_fix":
@@ -296,17 +289,11 @@ def run_autofix(initial_state: AutoFixState) -> AutoFixState:
             break
 
         if state["action"] == "give_up":
-            # Revert workspace to original before stopping
-            if original_content is not None and target_path.exists():
-                target_path.write_text(original_content, encoding="utf-8")
             break
 
         if state["action"] == "retry":
-            # Revert workspace before next attempt
-            if original_content is not None and target_path.exists():
-                target_path.write_text(original_content, encoding="utf-8")
-
-            # Append previous failure info so next analysis can learn
+            # Keep the current workspace changes so later attempts can build on
+            # earlier partial fixes when multiple issues are chained together.
             state["ci_input"] += (
                 f"\n\n## Auto-Fix Attempt {attempt + 1} (failed)\n"
                 f"Patch applied: {json.dumps(state.get('patch_result'), ensure_ascii=False)}\n"

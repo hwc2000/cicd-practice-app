@@ -175,6 +175,9 @@ def generate_openai_patch(
         "너는 CI 자동 수정 에이전트다.\n\n"
         "규칙:\n"
         "- 한 번에 하나의 파일만 수정한다.\n"
+        "- 하지만 가장 먼저 실패를 멈추게 하는 root cause 파일을 우선 선택한다.\n"
+        "- 같은 로그에 여러 오류가 보이면, 테스트 기대값보다 런타임 예외(NameError, ImportError, TypeError 등)를 먼저 해결한다.\n"
+        "- retry 시 이전 패치가 workspace에 남아 있을 수 있으므로 현재 제공된 소스코드를 기준으로 다음 수정 대상을 다시 판단한다.\n"
         "- 수정은 반드시 replace_text JSON 형태로 구조화한다.\n"
         "- find 문자열은 소스코드에서 정확히 존재하는 부분을 복사한다.\n"
         "- 테스트 코드를 바꿔서 통과시키는 것은 금지한다.\n"
@@ -210,7 +213,8 @@ def generate_openai_patch(
         "}\n"
         "```\n\n"
         "중요: find 문자열은 소스코드에 실제로 존재해야 한다. "
-        "테스트 파일을 수정하지 않는다."
+        "테스트 파일을 수정하지 않는다. "
+        "여러 실패가 보이면 가장 먼저 테스트 실행을 막는 런타임 예외를 일으키는 파일을 선택하라."
     )
 
     client = responses_client or create_openai_client(config)

@@ -143,11 +143,11 @@ pipeline {
                                     else
                                         PYTHON_BIN=python3
                                     fi
-                                    PYTHONPATH=. OPENAI_DEBUG_AGENT_ENABLED=true "$PYTHON_BIN" scripts/run_autofix.py \
-                                        --input debug-agent-input.md \
-                                        --workspace . \
-                                        --output autofix-result.json \
-                                        --max-attempts 3
+                                        PYTHONPATH=. OPENAI_DEBUG_AGENT_ENABLED=true "$PYTHON_BIN" scripts/run_autofix.py \
+                                            --input debug-agent-input.md \
+                                            --workspace . \
+                                            --output autofix-result.json \
+                                            --max-attempts 5
                                 ''',
                                 returnStatus: true
                             )
@@ -167,7 +167,7 @@ pipeline {
                                     --input debug-agent-input.md \
                                     --workspace . \
                                     --output autofix-result.json \
-                                    --max-attempts 3
+                                    --max-attempts 5
                             ''',
                             returnStatus: true
                         )
