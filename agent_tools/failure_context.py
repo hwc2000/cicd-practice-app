@@ -81,7 +81,7 @@ def extract_changed_files(text: str) -> list[str]:
     files = [
         line.strip()
         for line in candidates
-        if re.match(r"^(app|tests|scripts|docs)/[^\s]+", line.strip())
+        if re.match(r"^(app|tests|scripts|docs|agent_tools)/[^\s]+", line.strip())
     ]
     return unique_lines(files)
 
