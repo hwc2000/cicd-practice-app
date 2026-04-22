@@ -21,3 +21,4 @@ class ItemResponse(BaseModel):
     quantity: int
     discount_percent: float
     total_price: float
+    source: str

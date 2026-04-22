@@ -3,7 +3,7 @@
 from fastapi.testclient import TestClient
 
 from app.main import app
-from app.services import calculate_total_price, reset_store
+from app.services import build_item_record, calculate_total_price, reset_store
 
 client = TestClient(app)
 
@@ -50,6 +50,19 @@ def test_calculate_total_half_discount():
     assert calculate_total_price(200, 1, 50) == 100.0
 
 
+def test_build_item_record_normalizes_name():
+    item = build_item_record(
+        item_id=7,
+        name="   deluxe    widget   pro  ",
+        price=100.0,
+        quantity=2,
+        discount_percent=10.0,
+        total_price=180.0,
+        source="api",
+    )
+    assert item["name"] == "Deluxe Widget Pro"
+
+
 # --- Item CRUD Endpoints ---
 
 def test_create_item():
@@ -66,6 +79,7 @@ def test_create_item():
     assert data["quantity"] == 2
     assert data["discount_percent"] == 10.0
     assert data["total_price"] == 180.0  # 100 * 2 * 0.9
+    assert data["source"] == "api"
 
 
 def test_create_item_no_discount():
@@ -76,7 +90,9 @@ def test_create_item_no_discount():
     })
     assert response.status_code == 201
     data = response.json()
+    assert data["name"] == "Gadget"
     assert data["total_price"] == 150.0  # 50 * 3 * 1.0
+    assert data["source"] == "api"
 
 
 def test_get_item():
