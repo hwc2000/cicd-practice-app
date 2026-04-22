@@ -34,7 +34,7 @@ def create_item(name: str, price: float, quantity: int, discount_percent: float)
         "price": price,
         "quantity": quantity,
         "discount_percent": discount_percent,
-        "total": total,
+        "total_price": total,
     }
     _items[_next_id] = item
     _next_id += 1
