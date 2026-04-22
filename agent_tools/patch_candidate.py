@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any
 
 
-ALLOWED_PREFIXES = ("app/", "tests/")
+ALLOWED_PREFIXES = ("app/", "tests/", "agent_tools/", "scripts/")
 
 
 def load_patch_candidate(report: dict[str, Any]) -> dict[str, Any] | None:
