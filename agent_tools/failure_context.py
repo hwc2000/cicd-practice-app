@@ -195,7 +195,7 @@ def analyze_ci_failure(input_text: str, system_prompt: str = "", user_prompt: st
 def build_failure_report(input_text: str, system_prompt: str = "", user_prompt: str = "") -> str:
     analysis = analyze_ci_failure(input_text, system_prompt=system_prompt, user_prompt=user_prompt)
 
-    return f"""# CI Failure Report
+    return f"""# Debug Agent Report
 
 ## Prompt Context
 
