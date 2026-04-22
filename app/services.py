@@ -36,6 +36,7 @@ def build_item_record(
     quantity: int,
     discount_percent: float,
     total_price: float,
+    source: str,
 ) -> dict[str, Any]:
     """Build the canonical item payload used by the API and in-memory store."""
     return {
@@ -45,6 +46,7 @@ def build_item_record(
         "quantity": quantity,
         "discount_percent": discount_percent,
         "total_price": total_price,
+        "source": source,
     }
 
 
