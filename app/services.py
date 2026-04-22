@@ -35,7 +35,7 @@ def create_item(name: str, price: float, quantity: int, discount_percent: float)
     total = calculate_total_price(price, quantity, discount_percent)
     item = {
         "id": _next_id,
-        "name": normalize_item_name(name),
+        "name": name,
         "price": price,
         "quantity": quantity,
         "discount_percent": discount_percent,

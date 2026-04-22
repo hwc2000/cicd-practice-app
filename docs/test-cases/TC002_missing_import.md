@@ -1,4 +1,4 @@
-# Test Case 002: Missing Import (서비스가 유틸 함수를 쓰는데 import 누락)
+# Test Case 002: Missing Import 성공 기록
 
 ## 날짜
 2026-04-22
@@ -8,41 +8,40 @@
 
 ## 시나리오
 
-`app/services.py`는 상품 이름 정규화를 위해 `app/utils.py`의 `normalize_item_name()`을 사용합니다.
+실험 당시 `app/services.py`는 `app/utils.py`의 `normalize_item_name()`을 사용하도록 구성했고, 의도적으로 import 한 줄을 제거해서 실패를 만들었습니다.
 
-정상 코드:
-
-```python
-from app.utils import normalize_item_name
-```
-
-이 import 줄을 실수로 지우면 `create_item()` 호출 시 런타임에서 `NameError`가 발생합니다.
-
-## 재현 방법
-
-의도적으로 아래 한 줄을 제거합니다.
+버그 형태:
 
 ```python
 from app.utils import normalize_item_name
 ```
 
-그 뒤 `pytest -q` 또는 Jenkins 빌드를 실행합니다.
+이 줄을 제거하면 `create_item()` 호출 시 `NameError`가 발생했습니다.
 
-## 예상 실패 형태
+## 실패 형태
 
 ```text
 FAILED tests/test_main.py::test_create_item - NameError: name 'normalize_item_name' is not defined
 FAILED tests/test_main.py::test_create_item_normalizes_name - NameError: name 'normalize_item_name' is not defined
 ```
 
-## 에이전트가 해야 하는 일
+## 실제 결과
 
-1. 실패는 `tests/test_main.py`에서 보이지만 수정은 `app/services.py`에서 해야 함
-2. `normalize_item_name` 심볼이 정의되지 않았다는 점을 보고 missing import로 해석해야 함
-3. 새 로직을 만들지 말고 기존 `app/utils.py`의 함수를 import해서 연결해야 함
+```text
+61번 빌드 FAILURE
+-> Jenkins artifact 생성
+-> OpenAI auto-fix가 missing import를 복구
+-> auto commit / push
+-> 62번 빌드 자동 생성
+-> 62번 SUCCESS
+```
 
-## 기대 결과
+## 의미
 
-- Auto-fix가 `app/services.py`에 `from app.utils import normalize_item_name`를 복구
-- pytest 전체 통과
-- git push 후 검증 빌드 SUCCESS
+- TC002는 하드코딩된 전용 규칙을 추가해서 맞춘 케이스가 아니라, 현재 OpenAI auto-fix 경로가 import 누락을 읽고 복구한 케이스로 확인함
+- 이후 TC003, TC004, TC005도 같은 방식으로 실제 실패를 만들고 auto-fix loop를 검증할 예정
+
+## 정리
+
+- TC002 실험용 코드와 테스트는 실험 종료 후 제거
+- 문서만 성공 기록으로 유지
