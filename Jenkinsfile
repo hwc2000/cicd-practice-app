@@ -185,7 +185,11 @@ pipeline {
                                 git config user.email "autofix-agent@ci.local"
                                 git config user.name "CI AutoFix Agent"
                                 git checkout main || git checkout -b main
-                                git add -A
+                                git add app/ tests/ scripts/ agent_tools/ prompts/
+                                if git diff --cached --quiet; then
+                                    echo "No code changes to commit."
+                                    exit 1
+                                fi
                                 git commit -m "autofix: fix build #${BUILD_NUMBER}"
                                 git push https://${GIT_USER}:${GIT_TOKEN}@github.com/hwc2000/cicd-practice-app.git main
                             '''
