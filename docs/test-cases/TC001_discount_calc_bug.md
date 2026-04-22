@@ -42,18 +42,30 @@ FAILED test_create_item - assert 220.0 == 180.0
 
 ## 실제 결과
 
-> 빌드 #__ — (결과 대기중)
+> 빌드 #54 → auto-fix → #55 SUCCESS ✅
 
 ### Auto-fix 동작
 
 | 단계 | 결과 | 비고 |
 |------|------|------|
-| Rule-based 분석 | - | |
-| OpenAI 패치 생성 | - | |
-| 로컬 pytest 검증 | - | |
-| git push | - | |
-| 검증 빌드 | - | |
+| Rule-based 분석 | ❌ 매칭 실패 | message 패턴만 지원 |
+| OpenAI 패치 생성 | ✅ 성공 | `+` → `-` 정확히 수정 |
+| 로컬 pytest 검증 | ✅ 전체 통과 | 14 passed |
+| git push | ✅ 성공 | HEAD:refs/heads/main |
+| 검증 빌드 #55 | ✅ SUCCESS | 자동 트리거 |
+
+### OpenAI가 적용한 패치
+
+```diff
+-    # BUG: discount is added instead of subtracted
+     subtotal = price * quantity
+     discount_amount = subtotal * (discount_percent / 100)
+-    total = subtotal + discount_amount  # should be subtotal - discount_amount
++    total = subtotal - discount_amount
+     return round(total, 2)
+```
 
 ### 시행착오
 
-(빌드 후 기록)
+- 없음 — 1회 시도로 성공 (attempt 1/3)
+- OpenAI가 버그 코멘트(`# BUG:`, `# should be`)도 함께 제거해서 코드를 깔끔하게 정리함

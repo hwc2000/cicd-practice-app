@@ -6,7 +6,7 @@ import argparse
 from pathlib import Path
 from typing import Any, TypedDict
 
-from agent_tools.debug_agent import DEFAULT_SYSTEM_PROMPT, DEFAULT_USER_PROMPT
+from agent_tools.failure_context import DEFAULT_SYSTEM_PROMPT, DEFAULT_USER_PROMPT
 from agent_tools.debug_graph import (
     load_artifacts,
     public_state,

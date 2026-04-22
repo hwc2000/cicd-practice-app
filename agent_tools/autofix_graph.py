@@ -15,10 +15,10 @@ from pathlib import Path
 from typing import Any, TypedDict
 
 
-from agent_tools.debug_agent import (
+from agent_tools.failure_context import (
     DEFAULT_SYSTEM_PROMPT,
     DEFAULT_USER_PROMPT,
-    analyze_failure,
+    analyze_ci_failure,
     read_prompt,
     render_user_prompt,
 )
@@ -80,8 +80,8 @@ def collect_error(state: AutoFixState) -> AutoFixState:
 
 
 def analyze_failure_node(state: AutoFixState) -> AutoFixState:
-    """Run rule-based failure analysis."""
-    state["analysis"] = analyze_failure(
+    """Extract reusable failure context for later repair steps."""
+    state["analysis"] = analyze_ci_failure(
         input_text=state["ci_input"],
         system_prompt=state["system_prompt"],
         user_prompt=state["rendered_user_prompt"],
@@ -192,7 +192,7 @@ def _try_openai_fix(state: AutoFixState) -> dict[str, Any] | None:
     find/replace patch for any failure pattern it can understand.
     """
     try:
-        from agent_tools.openai_debug_agent import (
+        from agent_tools.openai_repair import (
             generate_openai_patch,
             load_config,
             merged_env,

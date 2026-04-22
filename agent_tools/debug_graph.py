@@ -7,11 +7,11 @@ import json
 from pathlib import Path
 from typing import Any
 
-from agent_tools.debug_agent import (
+from agent_tools.failure_context import (
     DEFAULT_SYSTEM_PROMPT,
     DEFAULT_USER_PROMPT,
-    analyze_failure,
-    build_report,
+    analyze_ci_failure,
+    build_failure_report,
     read_prompt,
     render_user_prompt,
 )
@@ -40,7 +40,7 @@ def render_prompt_node(state: DebugAgentState) -> DebugAgentState:
 
 
 def analyze_failure_tool_node(state: DebugAgentState) -> DebugAgentState:
-    state["analysis"] = analyze_failure(
+    state["analysis"] = analyze_ci_failure(
         input_text=state["ci_input"],
         system_prompt=state["system_prompt"],
         user_prompt=state["rendered_user_prompt"],
@@ -49,7 +49,7 @@ def analyze_failure_tool_node(state: DebugAgentState) -> DebugAgentState:
 
 
 def render_report_node(state: DebugAgentState) -> DebugAgentState:
-    state["report_markdown"] = build_report(
+    state["report_markdown"] = build_failure_report(
         input_text=state["ci_input"],
         system_prompt=state["system_prompt"],
         user_prompt=state["rendered_user_prompt"],
@@ -113,4 +113,3 @@ def main() -> None:
     output_path = Path(args.output)
     write_json(output_path, public_state(final_state))
     print(f"Wrote {output_path}")
-
