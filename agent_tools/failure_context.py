@@ -86,16 +86,34 @@ def extract_changed_files(text: str) -> list[str]:
     return unique_lines(files)
 
 
-def choose_suspected_files(changed_files: list[str], failed_tests: list[str]) -> list[str]:
-    app_files = [path for path in changed_files if path.startswith("app/")]
-    if app_files:
-        return app_files
+def extract_traceback_files(text: str) -> list[str]:
+    matches = re.findall(r'File "([^"]+\.py)"', text)
+    normalized = []
+    for match in matches:
+        path = match.strip()
+        if re.match(r"^(app|tests|scripts|docs|agent_tools)/[^\s]+", path):
+            normalized.append(path)
+    return unique_lines(normalized)
 
-    test_files = [path for path in changed_files if path.startswith("tests/")]
-    if test_files:
-        return test_files
 
-    return changed_files or [test.split("::", 1)[0] for test in failed_tests]
+def choose_suspected_files(
+    changed_files: list[str],
+    failed_tests: list[str],
+    traceback_files: list[str],
+) -> list[str]:
+    ranked: list[str] = []
+
+    app_changed = [path for path in changed_files if path.startswith("app/")]
+    app_traceback = [path for path in traceback_files if path.startswith("app/")]
+    test_files = [test.split("::", 1)[0] for test in failed_tests]
+    test_changed = [path for path in changed_files if path.startswith("tests/")]
+
+    for group in (app_traceback, app_changed, traceback_files, test_changed, test_files, changed_files):
+        for path in group:
+            if path not in ranked:
+                ranked.append(path)
+
+    return ranked
 
 
 def format_list(items: list[str], default: str = "unknown") -> str:
@@ -155,7 +173,8 @@ def analyze_ci_failure(input_text: str, system_prompt: str = "", user_prompt: st
     failed_tests = extract_failed_tests(input_text)
     error_lines = extract_error_lines(input_text)
     changed_files = extract_changed_files(input_text)
-    suspected_files = choose_suspected_files(changed_files, failed_tests)
+    traceback_files = extract_traceback_files(input_text)
+    suspected_files = choose_suspected_files(changed_files, failed_tests, traceback_files)
     fix_direction = build_fix_direction(suspected_files, failed_tests)
     patch_candidate = infer_patch_candidate(suspected_files, failed_tests, error_lines)
     prompt_summary = summarize_prompt(system_prompt, user_prompt)
@@ -170,6 +189,7 @@ def analyze_ci_failure(input_text: str, system_prompt: str = "", user_prompt: st
         "failed_tests": failed_tests,
         "error_snippet": error_lines,
         "changed_files": changed_files,
+        "traceback_files": traceback_files,
         "suspected_files": suspected_files,
         "fix_direction": fix_direction,
         "patch_candidate": patch_candidate,

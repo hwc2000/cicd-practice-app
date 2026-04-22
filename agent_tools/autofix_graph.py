@@ -206,6 +206,7 @@ def _try_openai_fix(state: AutoFixState) -> dict[str, Any] | None:
         # Read suspected source files from workspace
         analysis = state.get("analysis", {})
         suspected_files = analysis.get("suspected_files", [])
+        traceback_files = analysis.get("traceback_files", [])
         failed_tests = analysis.get("failed_tests", [])
         workspace = Path(state.get("workspace", "."))
 
@@ -217,6 +218,14 @@ def _try_openai_fix(state: AutoFixState) -> dict[str, Any] | None:
             if full_path.exists():
                 file_contents[filepath] = full_path.read_text(encoding="utf-8")
 
+        # Add traceback-referenced files, even if they were not recent changes.
+        for filepath in traceback_files:
+            if filepath in file_contents:
+                continue
+            full_path = workspace / filepath
+            if full_path.exists():
+                file_contents[filepath] = full_path.read_text(encoding="utf-8")
+
         # Also add failing test files (so LLM sees what the test expects)
         for test_id in failed_tests:
             test_file = test_id.split("::", 1)[0]  # "tests/test_main.py::test_read_root" -> "tests/test_main.py"
@@ -224,6 +233,19 @@ def _try_openai_fix(state: AutoFixState) -> dict[str, Any] | None:
                 full_path = workspace / test_file
                 if full_path.exists():
                     file_contents[test_file] = full_path.read_text(encoding="utf-8")
+
+        # For small apps, include the rest of app/*.py as additional context.
+        app_files = sorted(
+            path.relative_to(workspace).as_posix()
+            for path in (workspace / "app").glob("*.py")
+            if path.is_file()
+        )
+        if 0 < len(app_files) <= 8:
+            for filepath in app_files:
+                if filepath in file_contents:
+                    continue
+                full_path = workspace / filepath
+                file_contents[filepath] = full_path.read_text(encoding="utf-8")
 
         if not file_contents:
             return None
