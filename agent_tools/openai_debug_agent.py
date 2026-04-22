@@ -175,6 +175,95 @@ def run_openai_debug_agent(
     }
 
 
+def generate_openai_patch(
+    ci_input: str,
+    suspected_files: dict[str, str],
+    analysis: dict[str, Any],
+    config: OpenAIDebugAgentConfig,
+    responses_client: ResponsesClient | None = None,
+) -> dict[str, Any] | None:
+    """Ask OpenAI to generate a patch_candidate based on error and actual source code.
+
+    This is the key function for general-purpose auto-fix. Unlike the rule-based
+    ``infer_patch_candidate`` which only handles one hardcoded pattern, this
+    function lets the LLM read the real source code and produce a precise
+    find/replace patch for any failure it can understand.
+    """
+    require_enabled_config(config)
+
+    system_prompt = (
+        "너는 CI 자동 수정 에이전트다.\n\n"
+        "규칙:\n"
+        "- 한 번에 하나의 파일만 수정한다.\n"
+        "- 수정은 반드시 replace_text JSON 형태로 구조화한다.\n"
+        "- find 문자열은 소스코드에서 정확히 존재하는 부분을 복사한다.\n"
+        "- 테스트 코드를 바꿔서 통과시키는 것은 금지한다.\n"
+        "- 불확실하면 confidence를 low로 표시한다.\n"
+        "- JSON 코드 블록을 반드시 하나만 출력한다."
+    )
+
+    files_section = ""
+    for filepath, content in suspected_files.items():
+        files_section += f"\n### {filepath}\n```python\n{content}\n```\n"
+
+    analysis_json = json.dumps(analysis, ensure_ascii=False, indent=2)
+
+    user_prompt = (
+        "CI 실패를 분석하고 코드 수정안을 생성해줘.\n\n"
+        "## 실패 정보\n"
+        f"```text\n{ci_input[:4000]}\n```\n\n"
+        "## Rule-Based 분석 결과\n"
+        f"```json\n{analysis_json}\n```\n\n"
+        "## 의심 파일 소스코드\n"
+        f"{files_section}\n"
+        "## 출력 형식\n"
+        "반드시 아래 형태의 JSON 코드 블록 하나를 포함해줘:\n\n"
+        "```json\n"
+        "{\n"
+        '  "kind": "replace_text",\n'
+        '  "target_file": "수정할 파일 경로",\n'
+        '  "find": "현재 코드에서 찾을 정확한 문자열",\n'
+        '  "replace": "대체할 문자열",\n'
+        '  "reason": "이 수정이 필요한 이유",\n'
+        '  "confidence": "high 또는 low",\n'
+        '  "safe_to_apply": true\n'
+        "}\n"
+        "```\n\n"
+        "중요: find 문자열은 소스코드에 실제로 존재해야 한다. "
+        "테스트 파일을 수정하지 않는다."
+    )
+
+    messages = [
+        {"role": "developer", "content": system_prompt},
+        {"role": "user", "content": user_prompt},
+    ]
+
+    client = responses_client or create_openai_client(config)
+    response = client.create(model=config.model, input=messages)
+    output_text = extract_output_text(response)
+
+    return _extract_patch_json(output_text)
+
+
+def _extract_patch_json(text: str) -> dict[str, Any] | None:
+    """Extract a patch_candidate JSON from OpenAI response text.
+
+    Looks for ``json`` fenced code blocks containing a dict with
+    ``"kind": "replace_text"``.
+    """
+    import re
+
+    json_blocks = re.findall(r"```json\s*\n(.*?)\n```", text, re.DOTALL)
+    for block in json_blocks:
+        try:
+            data = json.loads(block)
+            if isinstance(data, dict) and data.get("kind") == "replace_text":
+                return data
+        except json.JSONDecodeError:
+            continue
+    return None
+
+
 def render_markdown(result: dict[str, Any]) -> str:
     return f"""# OpenAI Debug Agent 리포트
 

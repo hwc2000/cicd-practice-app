@@ -1,7 +1,0 @@
-{
-  "target_file": "app/main.py",
-  "applied": true,
-  "occurrences": 1,
-  "find": "return {\"message\": \"broken\"}",
-  "replace": "return {\"message\": \"hello cicd\"}"
-}

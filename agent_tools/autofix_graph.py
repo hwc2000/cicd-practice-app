@@ -185,12 +185,17 @@ def decide_next(state: AutoFixState) -> AutoFixState:
 
 
 def _try_openai_fix(state: AutoFixState) -> dict[str, Any] | None:
-    """Try to get a patch_candidate via OpenAI (optional, graceful failure)."""
+    """Try to get a patch_candidate via OpenAI with actual source code context.
+
+    Reads the suspected files from the workspace and sends their content to
+    OpenAI along with the error analysis, so the LLM can generate a precise
+    find/replace patch for any failure pattern it can understand.
+    """
     try:
         from agent_tools.openai_debug_agent import (
+            generate_openai_patch,
             load_config,
             merged_env,
-            run_openai_debug_agent,
         )
 
         env_file = Path(state.get("env_file", ".env"))
@@ -198,14 +203,37 @@ def _try_openai_fix(state: AutoFixState) -> dict[str, Any] | None:
         if not config.enabled or not config.api_key:
             return None
 
-        result = run_openai_debug_agent(
-            debug_input=state["ci_input"],
-            system_prompt=state["system_prompt"],
-            rendered_user_prompt=state["rendered_user_prompt"],
+        # Read suspected source files from workspace
+        analysis = state.get("analysis", {})
+        suspected_files = analysis.get("suspected_files", [])
+        failed_tests = analysis.get("failed_tests", [])
+        workspace = Path(state.get("workspace", "."))
+
+        file_contents: dict[str, str] = {}
+
+        # Add suspected files
+        for filepath in suspected_files:
+            full_path = workspace / filepath
+            if full_path.exists():
+                file_contents[filepath] = full_path.read_text(encoding="utf-8")
+
+        # Also add failing test files (so LLM sees what the test expects)
+        for test_id in failed_tests:
+            test_file = test_id.split("::", 1)[0]  # "tests/test_main.py::test_read_root" -> "tests/test_main.py"
+            if test_file not in file_contents:
+                full_path = workspace / test_file
+                if full_path.exists():
+                    file_contents[test_file] = full_path.read_text(encoding="utf-8")
+
+        if not file_contents:
+            return None
+
+        return generate_openai_patch(
+            ci_input=state["ci_input"],
+            suspected_files=file_contents,
+            analysis=analysis,
             config=config,
         )
-        local_analysis = result.get("local_analysis", {})
-        return local_analysis.get("patch_candidate")
     except Exception:
         return None
 

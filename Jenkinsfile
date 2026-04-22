@@ -131,23 +131,47 @@ pipeline {
             script {
                 // --- Auto-Fix ---
                 if (params.AUTOFIX_ENABLED) {
-                    def autofixExitCode = sh(
-                        script: '''
-                            set +e
-                            if [ -x .venv/bin/python ]; then
-                                . .venv/bin/activate
-                                PYTHON_BIN=python
-                            else
-                                PYTHON_BIN=python3
-                            fi
-                            PYTHONPATH=. "$PYTHON_BIN" scripts/run_autofix.py \
-                                --input debug-agent-input.md \
-                                --workspace . \
-                                --output autofix-result.json \
-                                --max-attempts 3
-                        ''',
-                        returnStatus: true
-                    )
+                    def autofixExitCode = 1
+                    try {
+                        withCredentials([string(credentialsId: 'openai-api-key', variable: 'OPENAI_API_KEY')]) {
+                            autofixExitCode = sh(
+                                script: '''
+                                    set +e
+                                    if [ -x .venv/bin/python ]; then
+                                        . .venv/bin/activate
+                                        PYTHON_BIN=python
+                                    else
+                                        PYTHON_BIN=python3
+                                    fi
+                                    PYTHONPATH=. OPENAI_DEBUG_AGENT_ENABLED=true "$PYTHON_BIN" scripts/run_autofix.py \
+                                        --input debug-agent-input.md \
+                                        --workspace . \
+                                        --output autofix-result.json \
+                                        --max-attempts 3
+                                ''',
+                                returnStatus: true
+                            )
+                        }
+                    } catch (Exception e) {
+                        echo "OpenAI credential not available. Running auto-fix with rule-based only."
+                        autofixExitCode = sh(
+                            script: '''
+                                set +e
+                                if [ -x .venv/bin/python ]; then
+                                    . .venv/bin/activate
+                                    PYTHON_BIN=python
+                                else
+                                    PYTHON_BIN=python3
+                                fi
+                                PYTHONPATH=. "$PYTHON_BIN" scripts/run_autofix.py \
+                                    --input debug-agent-input.md \
+                                    --workspace . \
+                                    --output autofix-result.json \
+                                    --max-attempts 3
+                            ''',
+                            returnStatus: true
+                        )
+                    }
 
                     if (autofixExitCode == 0 && fileExists('autofix-result.json')) {
                         echo 'Auto-fix succeeded! Committing and pushing fix...'

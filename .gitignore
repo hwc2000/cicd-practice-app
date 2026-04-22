@@ -4,3 +4,26 @@ docs/openai-debug-agent-report.md
 __pycache__/
 .pytest_cache/
 *.pyc
+
+# Jenkins workspace artifacts (should not be committed)
+*.tar
+*.tar.gz
+debug-agent-input.md
+debug-agent-report.md
+debug-graph-state.json
+debug-langgraph-state.json
+debug-graph-compare.json
+debug-openai-report.json
+debug-openai-report.md
+autofix-result.json
+autofix-artifacts/
+autofix-bundle.tar.gz
+pytest-output.log
+auto-fix.patch
+auto-fix-pytest.log
+auto-fix-summary.md
+auto-fix-verification.json
+patch-apply-result.json
+next-action.json
+fix-branch-plan.json
+.auto-fix-status
