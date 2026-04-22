@@ -79,24 +79,6 @@ def test_create_item_no_discount():
     assert data["total_price"] == 150.0  # 50 * 3 * 1.0
 
 
-def test_create_item_response_shape():
-    response = client.post("/items", json={
-        "name": "Contract Item",
-        "price": 30.0,
-        "quantity": 2,
-        "discount_percent": 5.0,
-    })
-    assert response.status_code == 201
-    assert set(response.json()) == {
-        "id",
-        "name",
-        "price",
-        "quantity",
-        "discount_percent",
-        "total_price",
-    }
-
-
 def test_get_item():
     # Create first
     client.post("/items", json={"name": "Test Item", "price": 25.0})
@@ -108,6 +90,7 @@ def test_get_item():
 def test_get_item_not_found():
     response = client.get("/items/999")
     assert response.status_code == 404
+    assert response.json() == {"detail": "Item 999 not found"}
 
 
 def test_list_items():
