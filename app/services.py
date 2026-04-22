@@ -45,7 +45,8 @@ def build_item_record(
         "price": price,
         "quantity": quantity,
         "discount_percent": discount_percent,
-        "total": total_price,
+        "total_price": total_price,
+        "source": source,
     }
 
 
@@ -60,6 +61,7 @@ def create_item(name: str, price: float, quantity: int, discount_percent: float)
         quantity=quantity,
         discount_percent=discount_percent,
         total_price=total,
+        source="api",
     )
     _items[_next_id] = item
     _next_id += 1
