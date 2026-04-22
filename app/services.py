@@ -18,10 +18,9 @@ def calculate_total_price(price: float, quantity: int, discount_percent: float) 
     Example:
         price=100, quantity=2, discount=10 → 100 * 2 * 0.9 = 180.0
     """
-    # BUG: discount is added instead of subtracted
     subtotal = price * quantity
     discount_amount = subtotal * (discount_percent / 100)
-    total = subtotal + discount_amount  # should be subtotal - discount_amount
+    total = subtotal - discount_amount
     return round(total, 2)
 
 
