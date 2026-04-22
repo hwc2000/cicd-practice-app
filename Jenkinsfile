@@ -7,6 +7,16 @@ pipeline {
             defaultValue: false,
             description: 'Run deployment to vm1. Keep false until the deploy server is ready.'
         )
+        booleanParam(
+            name: 'AUTOFIX_ENABLED',
+            defaultValue: false,
+            description: 'Enable auto-fix on test failure. Agent will fix code, commit, push, and re-trigger build.'
+        )
+        booleanParam(
+            name: 'OPENAI_DEBUG_AGENT_ENABLED',
+            defaultValue: false,
+            description: 'Enable optional OpenAI-backed debug report on failure.'
+        )
     }
 
     environment {
@@ -119,7 +129,58 @@ pipeline {
                 exit 0
             '''
             script {
-                if (params.OPENAI_DEBUG_AGENT_ENABLED) {
+                // --- Auto-Fix ---
+                if (params.AUTOFIX_ENABLED) {
+                    def autofixExitCode = sh(
+                        script: '''
+                            set +e
+                            if [ -x .venv/bin/python ]; then
+                                . .venv/bin/activate
+                                PYTHON_BIN=python
+                            else
+                                PYTHON_BIN=python3
+                            fi
+                            PYTHONPATH=. "$PYTHON_BIN" scripts/run_autofix.py \
+                                --input debug-agent-input.md \
+                                --workspace . \
+                                --output autofix-result.json \
+                                --max-attempts 3
+                        ''',
+                        returnStatus: true
+                    )
+
+                    if (autofixExitCode == 0 && fileExists('autofix-result.json')) {
+                        echo 'Auto-fix succeeded! Committing and pushing fix...'
+                        withCredentials([usernamePassword(
+                            credentialsId: 'github-token',
+                            usernameVariable: 'GIT_USER',
+                            passwordVariable: 'GIT_TOKEN'
+                        )]) {
+                            sh '''
+                                set +e
+                                git config user.email "autofix-agent@ci.local"
+                                git config user.name "CI AutoFix Agent"
+                                git checkout main || git checkout -b main
+                                git add -A
+                                git commit -m "autofix: fix build #${BUILD_NUMBER}"
+                                git push https://${GIT_USER}:${GIT_TOKEN}@github.com/hwc2000/cicd-practice-app.git main
+                            '''
+                        }
+                        // Trigger verification rebuild
+                        build job: env.JOB_NAME, parameters: [
+                            booleanParam(name: 'AUTOFIX_ENABLED', value: false),
+                            booleanParam(name: 'RUN_DEPLOY', value: false),
+                            booleanParam(name: 'OPENAI_DEBUG_AGENT_ENABLED', value: false)
+                        ], wait: false
+                    } else {
+                        echo 'Auto-fix could not resolve the failure. Manual review required.'
+                    }
+                } else {
+                    echo 'AUTOFIX_ENABLED=false, skipping auto-fix.'
+                }
+
+                // --- Optional OpenAI Debug Report (when auto-fix is off) ---
+                if (params.OPENAI_DEBUG_AGENT_ENABLED && !params.AUTOFIX_ENABLED) {
                     withCredentials([string(credentialsId: 'openai-api-key', variable: 'OPENAI_API_KEY')]) {
                         sh '''
                             set +e
@@ -131,100 +192,13 @@ pipeline {
                             fi
                             PYTHONPATH=. OPENAI_DEBUG_AGENT_ENABLED=true "$PYTHON_BIN" scripts/run_openai_debug_agent.py --input debug-agent-input.md --output debug-openai-report.md
                             PYTHONPATH=. OPENAI_DEBUG_AGENT_ENABLED=true "$PYTHON_BIN" scripts/run_openai_debug_agent.py --input debug-agent-input.md --output debug-openai-report.json --format json
-                            if [ -f debug-openai-report.json ]; then
-                                PYTHONPATH=. "$PYTHON_BIN" scripts/apply_patch_candidate.py --input debug-openai-report.json --workspace . --apply --output patch-apply-result.json
-                                git diff -- app tests > auto-fix.patch || true
-                                if [ ! -s auto-fix.patch ]; then
-                                    echo "No workspace diff was produced by patch candidate application." > auto-fix.patch
-                                fi
-                                if [ -f patch-apply-result.json ]; then
-                                    set +e
-                                    PYTHONPATH=. pytest -q > auto-fix-pytest.log 2>&1
-                                    auto_fix_test_status=$?
-                                    cat auto-fix-pytest.log
-                                    if [ "$auto_fix_test_status" -eq 0 ]; then
-                                        auto_fix_passed=true
-                                    else
-                                        auto_fix_passed=false
-                                    fi
-                                    cat > auto-fix-verification.json <<EOF
-{
-  "verification_command": "PYTHONPATH=. pytest -q",
-  "exit_code": $auto_fix_test_status,
-  "passed": $auto_fix_passed,
-  "log_file": "auto-fix-pytest.log"
-}
-EOF
-                                    python - <<'PY'
-import json
-from pathlib import Path
-
-patch_result = json.loads(Path("patch-apply-result.json").read_text(encoding="utf-8"))
-verification = json.loads(Path("auto-fix-verification.json").read_text(encoding="utf-8"))
-
-summary = f"""# Auto-Fix Summary
-
-## Patch Apply
-
-- Target file: `{patch_result.get("target_file", "unknown")}`
-- Applied: `{patch_result.get("applied", False)}`
-- Match count: `{patch_result.get("occurrences", 0)}`
-- Result file: `patch-apply-result.json`
-- Diff file: `auto-fix.patch`
-
-## Verification
-
-- Command: `{verification.get("verification_command", "unknown")}`
-- Exit code: `{verification.get("exit_code", "unknown")}`
-- Passed: `{verification.get("passed", False)}`
-- Log file: `{verification.get("log_file", "auto-fix-pytest.log")}`
-- Verification file: `auto-fix-verification.json`
-"""
-
-Path("auto-fix-summary.md").write_text(summary, encoding="utf-8")
-PY
-                                    cat > next-action.json <<EOF
-{
-  "auto_fix_passed": $auto_fix_passed,
-  "recommended_next_step": "$([ "$auto_fix_passed" = true ] && echo prepare_fix_branch_artifacts || echo manual_review_required)",
-  "bundle_artifact": "autofix-bundle.tar.gz",
-  "summary_artifact": "auto-fix-summary.md",
-  "verification_artifact": "auto-fix-verification.json",
-  "deploy_allowed": false,
-  "requires_human_review": true
-}
-EOF
-                                    cat > fix-branch-plan.json <<EOF
-{
-  "base_commit": "${GIT_COMMIT:-unknown}",
-  "suggested_branch_name": "autofix/build-${BUILD_NUMBER}",
-  "bundle_artifact": "autofix-bundle.tar.gz",
-  "patch_file": "auto-fix.patch",
-  "verification_passed": $auto_fix_passed,
-  "ready_for_commit": $auto_fix_passed,
-  "requires_human_review": true
-}
-EOF
-                                    mkdir -p autofix-artifacts
-                                    cp patch-apply-result.json autofix-artifacts/
-                                    cp auto-fix.patch autofix-artifacts/
-                                    cp auto-fix-pytest.log autofix-artifacts/
-                                    cp auto-fix-verification.json autofix-artifacts/
-                                    cp auto-fix-summary.md autofix-artifacts/
-                                    cp next-action.json autofix-artifacts/
-                                    cp fix-branch-plan.json autofix-artifacts/
-                                    tar -czf autofix-bundle.tar.gz autofix-artifacts
-                                fi
-                            fi
                             exit 0
                         '''
                     }
-                } else {
-                    echo 'OPENAI_DEBUG_AGENT_ENABLED=false, skipping optional OpenAI debug report.'
                 }
             }
-            archiveArtifacts artifacts: 'debug-agent-input.md, debug-agent-report.md, debug-graph-state.json, debug-langgraph-state.json, debug-graph-compare.json, debug-openai-report.md, debug-openai-report.json, patch-apply-result.json, auto-fix.patch, auto-fix-pytest.log, auto-fix-verification.json, auto-fix-summary.md, next-action.json, fix-branch-plan.json, autofix-bundle.tar.gz, autofix-artifacts/**, pytest-output.log', allowEmptyArchive: true
-            echo 'CI/CD pipeline failed. Debug Agent input, reports, graph states, optional OpenAI reports, auto-fix artifacts, and auto-fix verification artifacts were archived.'
+            archiveArtifacts artifacts: 'debug-agent-input.md, debug-agent-report.md, debug-graph-state.json, debug-langgraph-state.json, debug-graph-compare.json, debug-openai-report.md, debug-openai-report.json, autofix-result.json, pytest-output.log', allowEmptyArchive: true
+            echo 'CI/CD pipeline failed. Debug artifacts were archived.'
         }
         success {
             echo 'CI/CD pipeline succeeded.'
